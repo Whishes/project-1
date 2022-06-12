@@ -4,10 +4,10 @@ const words = ["aback","abase","abate","abbey","abbot","abhor","abide","abled","
 const chosenWord = []; //gets filled by startWordle funct
 let keys = document.getElementsByClassName("key");
 const containerArr = document.getElementsByClassName("inputs");
-let inputRow = 0; // x value
-let letterColumn = 0; // y value
-let remainingGuesses = 6;
-const wordArr = [];
+let inputRow = 0; // y value
+let letterColumn = 0; // x value
+let remainingGuesses = 5; // guesses result count
+const wordArr = []; // user's word
 
 const startWordle = () => {
   // Gets a random word from the array
@@ -45,13 +45,14 @@ const logKey = (e) => {
   // checks if letter is number vs capital letter
   const letterMatch = letter.match(/[A-Z]/g);
   if (e.keyCode === 13) {
-    // Do this if Enter was pressed
+    // Do this if Enter is pressed
     // when enter is pressed plus the x value and run a function to check result
 
     // only run function if the letterColumn is >= 5
     if (letterColumn >= 5) {
       let greenCount = 0;
-      console.log("Enter was pressed");
+      //console.log("Enter was pressed");
+
       const rowArr = containerArr[inputRow].children;
       // loop through y row and get all x values and push into an array
       if (wordArr.length < 5) {
@@ -64,23 +65,39 @@ const logKey = (e) => {
       // compare the wordArr result to the chosenWord array
       for (let i = 0; i < chosenWord.length; i++) {
         if (chosenWord[i] === wordArr[i]) {
-          console.log("letter is in the correct column");
+          //console.log("letter is in the correct column");
           rowArr[i].style.backgroundColor = "green";
           greenCount++;
         } else if (chosenWord.includes(wordArr[i])) {
-          console.log("letter is in the word but not right column");
+          //console.log("letter is in the word but not right column");
           rowArr[i].style.backgroundColor = "yellow";
         } else {
-          console.log("letter is in not in the word");
-          rowArr[i].style.backgroundColor = "red";
+          //console.log("letter is in not in the word");
+          rowArr[i].style.backgroundColor = "gray";
         }
       }
 
-      // TODO: increase the value of the row, move onto next row if all columns aren't green, decrease guess counter
+      // check if all are correct, if not move to next row etc
       if (greenCount >= 5) {
-        window.alert(`You got the word in ${6 - remainingGuesses} guess`);
+        window.alert(
+          `You got the word ${chosenWord.join("")} in ${
+            6 - remainingGuesses
+          } guesses`
+        );
       } else {
         // everything else
+        if (remainingGuesses <= 0) {
+          window.alert("You lost this round");
+          inputRow++; // adds to row count to make the unfocus function work
+          unfocusPreviousRow();
+        } else {
+          inputRow++; // moves cursor to next row
+          letterColumn = 0; // moves cursor to first column
+          wordArr.length = 0; // empties user word guess
+          remainingGuesses--; // deducts guess count by 1
+          unfocusPreviousRow(); // removes event listeners and blurs previous row
+          focusInputRow(); // adds event listeners and focuses new row
+        }
       }
     }
   } else if (e.keyCode === 8) {
@@ -115,6 +132,7 @@ const logKey = (e) => {
   }
 };
 
+// adds event listeners and focuses row
 const focusInputRow = () => {
   for (let i = 0; i < containerArr[inputRow].children.length; i++) {
     //console.log(containerArr[inputRow].children[i]);
@@ -130,10 +148,23 @@ const focusInputRow = () => {
   }
 };
 
-// PUT THIS SOMEWHERE ELSE
-focusInputRow();
+// removes event listeners and blurs previous row
+const unfocusPreviousRow = () => {
+  const previousRow = containerArr[inputRow - 1];
+  for (let i = 0; i < previousRow.children.length; i++) {
+    // applies tab index to each div just to check if they can be typed in etc
+    previousRow.children[i].removeAttribute("tabindex");
 
-// Game state start
+    // apply focus function to the first element in the row
+    previousRow.firstElementChild.blur();
+
+    // adds event lisenter to each individual letter div in the respective row
+    previousRow.children[i].removeEventListener("keydown", logKey, true);
+  }
+};
+
+// init game state
 window.onload = () => {
   startWordle();
+  focusInputRow();
 };
