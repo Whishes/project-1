@@ -26,13 +26,20 @@ for (let keyElement of keys) {
     switch (key) {
       case "␡":
         console.log("Delete Pressed");
+        // apply focus function to the first element in the row
+        containerArr[inputRow].firstElementChild.focus();
         break;
+
       case "Enter":
         console.log("Enter Pressed");
         //submitWordle();
+        // apply focus function to the first element in the row
+        containerArr[inputRow].firstElementChild.focus();
         break;
       default:
-      // handle presses into divs
+        // handle presses into divs
+        // apply focus function to the first element in the row
+        containerArr[inputRow].firstElementChild.focus();
     }
   });
 }
@@ -64,16 +71,61 @@ const logKey = (e) => {
 
       // compare the wordArr result to the chosenWord array
       for (let i = 0; i < chosenWord.length; i++) {
+        // TODO: Clean up the setTimeout function by trying to just have 1 that wraps the whole if statement instead of a timeout in each one
+
+        setTimeout(function () {}, i * 500);
+
         if (chosenWord[i] === wordArr[i]) {
+          setTimeout(function () {
+            rowArr[i].animate(
+              [
+                { transform: "rotateY(0deg)" },
+                { transform: "rotateY(180deg)" },
+                { transform: "rotateY(360deg)", backgroundColor: "#78ca00" },
+              ],
+              2000
+            );
+
+            setTimeout(function () {
+              rowArr[i].style.backgroundColor = "#78ca00";
+            }, 2000);
+            greenCount++;
+          }, i * 500);
           //console.log("letter is in the correct column");
-          rowArr[i].style.backgroundColor = "green";
-          greenCount++;
         } else if (chosenWord.includes(wordArr[i])) {
           //console.log("letter is in the word but not right column");
-          rowArr[i].style.backgroundColor = "yellow";
+          //rowArr[i].style.backgroundColor = "#ffef0d";
+          setTimeout(function () {
+            rowArr[i].animate(
+              [
+                { transform: "rotateY(0deg)" },
+                { transform: "rotateY(180deg)" },
+                { transform: "rotateY(360deg)", backgroundColor: "#ffef0d" },
+              ],
+              2000
+            );
+
+            setTimeout(function () {
+              rowArr[i].style.backgroundColor = "#ffef0d";
+            }, 2000);
+          }, i * 500);
         } else {
           //console.log("letter is in not in the word");
-          rowArr[i].style.backgroundColor = "gray";
+          //rowArr[i].style.backgroundColor = "#aa0000";
+          setTimeout(function () {
+            rowArr[i].animate(
+              [
+                { transform: "rotateY(0deg)" },
+                { transform: "rotateY(180deg)" },
+                { transform: "rotateY(360deg)", backgroundColor: "#aa0000" },
+              ],
+              2000
+            );
+
+            setTimeout(function () {
+              rowArr[i].style.backgroundColor = "#aa0000";
+            }, 2000);
+          }, i * 500);
         }
       }
 
@@ -84,6 +136,8 @@ const logKey = (e) => {
             6 - remainingGuesses
           } guesses`
         );
+        inputRow++; // adds to row count to make the unfocus function work
+        unfocusPreviousRow();
       } else {
         // everything else
         if (remainingGuesses <= 0) {
@@ -112,7 +166,11 @@ const logKey = (e) => {
       containerArr[inputRow].children[letterColumn].textContent = "";
     }
     //console.log(containerArr[inputRow].children[letterColumn].textContent);
-  } else if (!letterMatch || (letterMatch.length > 1 && !(e.keyCode === 8))) {
+  } else if (
+    !letterMatch ||
+    (letterMatch.length > 1 && !(e.keyCode === 8)) ||
+    (e.keyCode >= 112 && e.keyCode <= 123)
+  ) {
     // Do nothing if a number or anything not a letter is pressed
 
     console.log("number or something was pressed");
