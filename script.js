@@ -10,122 +10,130 @@ let remainingGuesses = 6;
 const wordArr = [];
 
 const startWordle = () => {
-	// Gets a random word from the array
-	const word = words[Math.floor(Math.random() * words.length)].split("");
-	// loop through and put each element of the split word array into a global const chosenWord array
-	word.forEach((element) => {
-		chosenWord.push(element.toUpperCase());
-	});
-	console.log(chosenWord);
+  // Gets a random word from the array
+  const word = words[Math.floor(Math.random() * words.length)].split("");
+  // loop through and put each element of the split word array into a global const chosenWord array
+  word.forEach((element) => {
+    chosenWord.push(element.toUpperCase());
+  });
+  console.log(chosenWord);
 };
 
 // onscreen keyboard functionality
 for (let keyElement of keys) {
-	let key = keyElement.textContent;
-	keyElement.addEventListener("click", function (event) {
-		switch (key) {
-			case "␡":
-				console.log("Delete Pressed");
-				break;
-			case "Enter":
-				console.log("Enter Pressed");
-				//submitWordle();
-				break;
-			default:
-			// handle presses into divs
-		}
-	});
+  let key = keyElement.textContent;
+  keyElement.addEventListener("click", function (event) {
+    switch (key) {
+      case "␡":
+        console.log("Delete Pressed");
+        break;
+      case "Enter":
+        console.log("Enter Pressed");
+        //submitWordle();
+        break;
+      default:
+      // handle presses into divs
+    }
+  });
 }
 
 //console.log(containerArr);
 
 const logKey = (e) => {
-	const letter = e.key.toUpperCase();
+  const letter = e.key.toUpperCase();
 
-	// checks if letter is number vs capital letter
-	const letterMatch = letter.match(/[A-Z]/g);
-	if (e.keyCode === 13) {
-		// do this if Enter was pressed
-		// when enter is pressed plus the x value and run a function to check result
+  // checks if letter is number vs capital letter
+  const letterMatch = letter.match(/[A-Z]/g);
+  if (e.keyCode === 13) {
+    // Do this if Enter was pressed
+    // when enter is pressed plus the x value and run a function to check result
 
-		// only run function if the letterColumn is >= 5
-		if (letterColumn >= 5) {
-			let greenCount = 0;
-			console.log("Enter was pressed");
-			const rowArr = containerArr[inputRow].children;
-			// loop through y row and get all x values and push into an array
-			if (wordArr.length < 5) {
-				for (let i = 0; i < rowArr.length; i++) {
-					wordArr.push(rowArr[i].innerText);
-				}
-			}
-			console.log(wordArr);
+    // only run function if the letterColumn is >= 5
+    if (letterColumn >= 5) {
+      let greenCount = 0;
+      console.log("Enter was pressed");
+      const rowArr = containerArr[inputRow].children;
+      // loop through y row and get all x values and push into an array
+      if (wordArr.length < 5) {
+        for (let i = 0; i < rowArr.length; i++) {
+          wordArr.push(rowArr[i].innerText);
+        }
+      }
+      console.log(wordArr);
 
-			// compare the wordArr result to the chosenWord array
-			for (let i = 0; i < chosenWord.length; i++) {
-				if (chosenWord[i] === wordArr[i]) {
-					console.log("letter is in the correct column");
-					rowArr[i].style.backgroundColor = "green";
-					greenCount++;
-				} else if (chosenWord.includes(wordArr[i])) {
-					console.log("letter is in the word but not right column");
-					rowArr[i].style.backgroundColor = "yellow";
-				} else {
-					console.log("letter is in not in the word");
-					rowArr[i].style.backgroundColor = "red";
-				}
-			}
+      // compare the wordArr result to the chosenWord array
+      for (let i = 0; i < chosenWord.length; i++) {
+        if (chosenWord[i] === wordArr[i]) {
+          console.log("letter is in the correct column");
+          rowArr[i].style.backgroundColor = "green";
+          greenCount++;
+        } else if (chosenWord.includes(wordArr[i])) {
+          console.log("letter is in the word but not right column");
+          rowArr[i].style.backgroundColor = "yellow";
+        } else {
+          console.log("letter is in not in the word");
+          rowArr[i].style.backgroundColor = "red";
+        }
+      }
 
-			// TODO: increase the value of the row, move onto next row if all columns aren't green, decrease guess counter
-			if (greenCount >= 5) {
-				window.alert(`You got the word in ${6 - remainingGuesses} guess`);
-			} else {
-				// everything else
-			}
-		}
-	} else if (!letterMatch || letterMatch.length > 1) {
-		// do nothing if a number or anything not a letter is pressed
-		return;
-	} else {
-		// do this if a letter is pressed
+      // TODO: increase the value of the row, move onto next row if all columns aren't green, decrease guess counter
+      if (greenCount >= 5) {
+        window.alert(`You got the word in ${6 - remainingGuesses} guess`);
+      } else {
+        // everything else
+      }
+    }
+  } else if (e.keyCode === 8) {
+    // Do this is if backspace has been pressed
+    //console.log("backspace was pressed");
 
-		// stop the auto-move etc when the x value >= 5
-		if (letterColumn < 5) {
-			// when typed put letter in y row in x column and +1 the x value
-			containerArr[inputRow].children[letterColumn].textContent = letter;
-			//console.log(containerArr[inputRow].children[letterColumn]);
-			letterColumn++;
-		} else {
-			// TODO: Display message to alert user to check their word?
-		}
-	}
+    // stops backspace being pressed if there's no letters
+    if (letterColumn >= 1) {
+      // move the position of the "cursor" back one
+      letterColumn--;
+      // clear the x value
+      containerArr[inputRow].children[letterColumn].textContent = "";
+    }
+    //console.log(containerArr[inputRow].children[letterColumn].textContent);
+  } else if (!letterMatch || (letterMatch.length > 1 && !(e.keyCode === 8))) {
+    // Do nothing if a number or anything not a letter is pressed
 
-	// TODO: Add functionality for backspace
+    console.log("number or something was pressed");
+    return;
+  } else {
+    // Do this if a letter is pressed
+
+    // stop the auto-move etc when the x value >= 5
+    if (letterColumn < 5) {
+      // when typed put letter in y row in x column and +1 the x value
+      containerArr[inputRow].children[letterColumn].textContent = letter;
+      //console.log(containerArr[inputRow].children[letterColumn]);
+      letterColumn++;
+    } else {
+      // TODO: Display message to alert user to check their word?
+    }
+  }
 };
 
 const focusInputRow = () => {
-	for (let i = 0; i < containerArr[inputRow].children.length; i++) {
-		//console.log(containerArr[inputRow].children[i]);
+  for (let i = 0; i < containerArr[inputRow].children.length; i++) {
+    //console.log(containerArr[inputRow].children[i]);
 
-		// applies tab index to each div just to check if they can be typed in etc
-		containerArr[inputRow].children[i].tabIndex = i;
+    // applies tab index to each div just to check if they can be typed in etc
+    containerArr[inputRow].children[i].tabIndex = i;
 
-		// apply focus function to the first element in the row
-		containerArr[inputRow].firstElementChild.focus();
+    // apply focus function to the first element in the row
+    containerArr[inputRow].firstElementChild.focus();
 
-		// adds event lisenter to each individual letter div in the respective row
-		containerArr[inputRow].children[i].addEventListener("keydown", logKey);
-	}
+    // adds event lisenter to each individual letter div in the respective row
+    containerArr[inputRow].children[i].addEventListener("keydown", logKey);
+  }
 };
-
-// "A" < "Z" = true
-
-// keydown eventlisteners looking for key event.target and print that key to the divs
 
 // PUT THIS SOMEWHERE ELSE
 focusInputRow();
 
 // Game state start
 window.onload = () => {
-	startWordle();
+  startWordle();
 };
