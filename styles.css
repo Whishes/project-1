@@ -1,28 +1,92 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+   height: 100%;
+   width: 100%;
+}
+
 body {
-    height: 100vh;
+    min-height: 100%;
+    width: 100%;
+    background-color: #1a1a1b;
+    font-family: "Monstserrat", sans-serif;
+    color: white;
+}
+
+
+header {
     display: flex;
-    flex-direction: column;
+    height: 6vh;
+    align-items: center;
     justify-content: space-between;
+    border-bottom: 1px solid black;
+    box-shadow: 0px 5px 10px -10px black;
+    padding: 0px 10px 0px 10px;
+}
+
+header nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+header nav ul {
+    display: flex;
+}
+header nav ul > li {
+    list-style: none;
+    font-size: 20px;
+}
+
+header h1::first-letter {
+    font-size: 150%;
+}
+
+#bodyContainer {
+    height: calc(99vh - 6vh);
     max-width: 500px;
     width: 100%;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+#topContainer {
+    margin-top: 10px;
+}
+#wStreak {
+    display: flex;
+    justify-content: center;
+}
+
+.keyboard {
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
 }
 
 button {
     all: unset;
     height: 58px;
     cursor: pointer;
-    color: #8e57f7;
+    color: #b47cfb;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 .row {
     display: flex;
     width: 100%;
-    margin: 0 auto 1em;
+    margin: 0 auto 5px;
     justify-content: space-between;
     border: 0;
     padding: 0;
@@ -32,6 +96,11 @@ button {
     background-color: #333;
     flex: 1;
     margin: 0 3px;
+    border: 1px solid black;
+    border-radius: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 1px 2px 1px 1px black;
 }
 
 #inputContainer {
@@ -50,7 +119,34 @@ button {
     height: 1.5em;
     font-size: 2em;
     margin: 5px;
-    background-color: wheat;
-    color:#333;
-    border: 2px solid #333;
+
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: #333;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
+    box-shadow: 1px 2px 1px 1px black;
+}
+
+#input:focus {
+    outline: none;
+}
+
+#nGameBtn {
+    width:95%;
+    border: 1px solid black;
+    border-radius: 10px;
+    box-shadow: 1px 2px 1px 1px black;
+
+    font-size: 24px;
+    color: white;
+    text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
+    background-color: #b47cfb;
+
+    margin: 0px 5px 5px 5px;
+    
 }
