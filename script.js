@@ -4,10 +4,13 @@ const words = ["aback","abase","abate","abbey","abbot","abhor","abide","abled","
 const chosenWord = []; //gets filled by startWordle funct
 let keys = document.getElementsByClassName("key");
 const containerArr = document.getElementsByClassName("inputs");
+const keyboard = document.getElementsByClassName("keyboard");
 let inputRow = 0; // y value
 let letterColumn = 0; // x value
 let remainingGuesses = 5; // guesses result count
 const wordArr = []; // user's word
+let overallStreak = 0;
+let currentStreak = 0;
 
 const startWordle = () => {
 	// Gets a random word from the array
@@ -17,6 +20,40 @@ const startWordle = () => {
 		chosenWord.push(element.toUpperCase());
 	});
 	console.log(chosenWord);
+};
+
+const resetWordle = () => {
+	//console.log(containerArr.length);
+	// loop through each row of the inputs
+	for (let i = 0; i < containerArr.length; i++) {
+		// loop through each input column in the i'th row
+		for (let j = 0; j < containerArr[i].children.length; j++) {
+			//console.log(containerArr[i].children[j]);
+			containerArr[i].children[j].innerText = "";
+			containerArr[i].children[j].style.backgroundColor = "#333";
+		}
+	}
+
+	keyboard[0].removeChild(keyboard[0].firstElementChild);
+	chosenWord.length = 0;
+	inputRow = 0;
+	letterColumn = 0;
+	remainingGuesses = 5;
+	wordArr.length = 0;
+};
+
+// Create New Game Btn function
+const createNGBtn = () => {
+	const btn = document.createElement("button");
+	btn.id = "nGameBtn";
+	btn.addEventListener("click", function () {
+		resetWordle();
+		startWordle();
+		focusInputRow();
+	});
+	btn.textContent = "New Game?";
+
+	keyboard[0].insertAdjacentElement("afterbegin", btn);
 };
 
 // onscreen keyboard functionality
@@ -43,6 +80,11 @@ for (let keyElement of keys) {
 		}
 	});
 }
+
+const updateStreak = () => {
+	const streakText = document.getElementById("wStreak");
+	streakText.textContent = `${currentStreak} / ${overallStreak} word streak`;
+};
 
 //console.log(containerArr);
 
@@ -135,20 +177,29 @@ const logKey = (e) => {
 
 			// check if all are correct, if not move to next row etc
 			if (greenCount >= 5) {
-				window.alert(
+				alert(
 					`You got the word ${chosenWord.join("")} in ${
 						6 - remainingGuesses
 					} guesses`
 				);
 				inputRow++; // adds to row count to make the unfocus function work
+				overallStreak++;
+				currentStreak++;
 				unfocusPreviousRow();
+				updateStreak();
+				createNGBtn();
 			} else {
-				// everything else
+				// Check if final row. If so end game, if not move to next row
 				if (remainingGuesses <= 0) {
-					window.alert("You lost this round");
+					alert("You lost this round");
 					inputRow++; // adds to row count to make the unfocus function work
+					createNGBtn(); // creates New Game Button
 					unfocusPreviousRow();
+					overallStreak++;
+					currentStreak = 0;
+					updateStreak();
 				} else {
+					// everything else
 					inputRow++; // moves cursor to next row
 					letterColumn = 0; // moves cursor to first column
 					wordArr.length = 0; // empties user word guess
