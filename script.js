@@ -61,22 +61,26 @@ for (let keyElement of keys) {
 	let key = keyElement.textContent;
 	keyElement.addEventListener("click", function (event) {
 		switch (key) {
-			case "␡":
-				console.log("Delete Pressed");
+			case "←":
+				//console.log("Delete Pressed");
 				// apply focus function to the first element in the row
 				containerArr[inputRow].firstElementChild.focus();
+				logKey(key);
 				break;
 
-			case "Enter":
-				console.log("Enter Pressed");
+			case "↵":
+				//console.log("Enter Pressed");
 				//submitWordle();
 				// apply focus function to the first element in the row
 				containerArr[inputRow].firstElementChild.focus();
+				logKey(key);
 				break;
 			default:
 				// handle presses into divs
 				// apply focus function to the first element in the row
 				containerArr[inputRow].firstElementChild.focus();
+				//console.log(key);
+				logKey(key);
 		}
 	});
 }
@@ -89,11 +93,18 @@ const updateStreak = () => {
 //console.log(containerArr);
 
 const logKey = (e) => {
-	const letter = e.key.toUpperCase();
+	let letter;
+	// checks if the passed value is from a keyboard event or from the onscreen keyboard
+	if (e.constructor.name === "KeyboardEvent") {
+		letter = e.key.toUpperCase();
+	} else {
+		letter = e.toUpperCase();
+	}
+	//console.log(letter);
 
 	// checks if letter is number vs capital letter
 	const letterMatch = letter.match(/[A-Z]/g);
-	if (e.keyCode === 13) {
+	if (e.keyCode === 13 || e === "↵") {
 		// Do this if Enter is pressed
 		// when enter is pressed plus the x value and run a function to check result
 
@@ -209,7 +220,7 @@ const logKey = (e) => {
 				}
 			}
 		}
-	} else if (e.keyCode === 8) {
+	} else if (e.keyCode === 8 || e === "←") {
 		// Do this is if backspace has been pressed
 		//console.log("backspace was pressed");
 
