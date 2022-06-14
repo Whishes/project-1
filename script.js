@@ -105,107 +105,110 @@ const logKey = (e) => {
 
 			const rowArr = containerArr[inputRow].children;
 			// loop through y row and get all x values and push into an array
-			if (wordArr.length == 0) {
-				for (let i = 0; i < rowArr.length; i++) {
-					wordArr.push(rowArr[i].innerText);
-				}
-			} else {
-				console.error("The Word Array hasn't been emptied correctly");
-			}
+
 			console.log(wordArr);
 
 			// TODO: Check if user input word is an actual word by looping through word array
+			// check if the word actually exists
+			if (words.includes(wordArr.join("").toLocaleLowerCase())) {
+				// compare the wordArr result to the chosenWord array
+				for (let i = 0; i < chosenWord.length; i++) {
+					// TODO: Clean up the setTimeout function by trying to just have 1 that wraps the whole if statement instead of a timeout in each one
 
-			// compare the wordArr result to the chosenWord array
-			for (let i = 0; i < chosenWord.length; i++) {
-				// TODO: Clean up the setTimeout function by trying to just have 1 that wraps the whole if statement instead of a timeout in each one
+					//setTimeout(function () {}, i * 500);
 
-				//setTimeout(function () {}, i * 500);
-
-				if (chosenWord[i] === wordArr[i]) {
-					setTimeout(function () {
-						rowArr[i].animate(
-							[
-								{ transform: "rotateY(0deg)" },
-								{ transform: "rotateY(180deg)" },
-								{ transform: "rotateY(360deg)", backgroundColor: "#78ca00" },
-							],
-							2000
-						);
-
+					if (chosenWord[i] === wordArr[i]) {
 						setTimeout(function () {
-							rowArr[i].style.backgroundColor = "#78ca00";
-						}, 2000);
-					}, i * 300);
-					greenCount++;
-					//console.log("letter is in the correct column");
-				} else if (chosenWord.includes(wordArr[i])) {
-					//console.log("letter is in the word but not right column");
-					setTimeout(function () {
-						rowArr[i].animate(
-							[
-								{ transform: "rotateY(0deg)" },
-								{ transform: "rotateY(180deg)" },
-								{ transform: "rotateY(360deg)", backgroundColor: "#ffef0d" },
-							],
-							2000
-						);
+							rowArr[i].animate(
+								[
+									{ transform: "rotateY(0deg)" },
+									{ transform: "rotateY(180deg)" },
+									{ transform: "rotateY(360deg)", backgroundColor: "#78ca00" },
+								],
+								2000
+							);
 
+							setTimeout(function () {
+								rowArr[i].style.backgroundColor = "#78ca00";
+							}, 2000);
+						}, i * 300);
+						greenCount++;
+						//console.log("letter is in the correct column");
+					} else if (chosenWord.includes(wordArr[i])) {
+						//console.log("letter is in the word but not right column");
 						setTimeout(function () {
-							rowArr[i].style.backgroundColor = "#ffef0d";
-						}, 2000);
-					}, i * 300);
-				} else {
-					//console.log("letter is in not in the word");
-					setTimeout(function () {
-						rowArr[i].animate(
-							[
-								{ transform: "rotateY(0deg)" },
-								{ transform: "rotateY(180deg)" },
-								{ transform: "rotateY(360deg)", backgroundColor: "#aa0000" },
-							],
-							2000
-						);
+							rowArr[i].animate(
+								[
+									{ transform: "rotateY(0deg)" },
+									{ transform: "rotateY(180deg)" },
+									{ transform: "rotateY(360deg)", backgroundColor: "#ffef0d" },
+								],
+								2000
+							);
 
+							setTimeout(function () {
+								rowArr[i].style.backgroundColor = "#ffef0d";
+							}, 2000);
+						}, i * 300);
+					} else {
+						//console.log("letter is in not in the word");
 						setTimeout(function () {
-							rowArr[i].style.backgroundColor = "#aa0000";
-						}, 2000);
-					}, i * 300);
+							rowArr[i].animate(
+								[
+									{ transform: "rotateY(0deg)" },
+									{ transform: "rotateY(180deg)" },
+									{ transform: "rotateY(360deg)", backgroundColor: "#aa0000" },
+								],
+								2000
+							);
+
+							setTimeout(function () {
+								rowArr[i].style.backgroundColor = "#aa0000";
+							}, 2000);
+						}, i * 300);
+					}
 				}
-			}
-
-			// check if all are correct, if not move to next row etc
-			if (greenCount >= 5) {
-				alert(
-					`You got the word ${chosenWord.join("")} in ${
-						6 - remainingGuesses
-					} guesses`
-				);
-				inputRow++; // adds to row count to make the unfocus function work
-				overallStreak++;
-				currentStreak++;
-				unfocusPreviousRow();
-				updateStreak();
-				createNGBtn();
-			} else {
-				// Check if final row. If so end game, if not move to next row
-				if (remainingGuesses <= 0) {
-					alert("You lost this round");
+				// check if all are correct, if not move to next row etc
+				if (greenCount >= 5) {
+					alert(
+						`You got the word ${chosenWord.join("")} in ${
+							6 - remainingGuesses
+						} guesses`
+					);
 					inputRow++; // adds to row count to make the unfocus function work
-					createNGBtn(); // creates New Game Button
-					unfocusPreviousRow();
-					inputRow--; // moves the cursor back so the body "click" handler works
 					overallStreak++;
-					currentStreak = 0;
+					currentStreak++;
+					unfocusPreviousRow();
 					updateStreak();
+					createNGBtn();
 				} else {
-					// everything else
-					inputRow++; // moves cursor to next row
-					letterColumn = 0; // moves cursor to first column
-					wordArr.length = 0; // empties user word guess
-					remainingGuesses--; // deducts guess count by 1
-					unfocusPreviousRow(); // removes event listeners and blurs previous row
-					focusInputRow(); // adds event listeners and focuses new row
+					// Check if final row. If so end game, if not move to next row
+					if (remainingGuesses <= 0) {
+						alert("You lost this round");
+						inputRow++; // adds to row count to make the unfocus function work
+						createNGBtn(); // creates New Game Button
+						unfocusPreviousRow();
+						inputRow--; // moves the cursor back so the body "click" handler works
+						overallStreak++;
+						currentStreak = 0;
+						updateStreak();
+					} else {
+						// everything else
+						inputRow++; // moves cursor to next row
+						letterColumn = 0; // moves cursor to first column
+						wordArr.length = 0; // empties user word guess
+						remainingGuesses--; // deducts guess count by 1
+						unfocusPreviousRow(); // removes event listeners and blurs previous row
+						focusInputRow(); // adds event listeners and focuses new row
+					}
+				}
+			} else {
+				// do this if the word doesn't exist
+				for (let i = 0; i < rowArr.length; i++) {
+					rowArr[i].style.animation = "shake 1s ease-in";
+					setTimeout(function () {
+						rowArr[i].style.animation = "";
+					}, 1000);
 				}
 			}
 		}
@@ -219,6 +222,8 @@ const logKey = (e) => {
 			letterColumn--;
 			// clear the x value
 			containerArr[inputRow].children[letterColumn].textContent = "";
+
+			wordArr.pop();
 		}
 		//console.log(containerArr[inputRow].children[letterColumn].textContent);
 	} else if (
@@ -239,6 +244,7 @@ const logKey = (e) => {
 			containerArr[inputRow].children[letterColumn].textContent = letter;
 			//console.log(containerArr[inputRow].children[letterColumn]);
 			letterColumn++;
+			wordArr.push(letter);
 		}
 	}
 };
