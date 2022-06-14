@@ -9,8 +9,8 @@ let inputRow = 0; // y value
 let letterColumn = 0; // x value
 let remainingGuesses = 5; // guesses result count
 const wordArr = []; // user's word
-let overallStreak = 0;
-let currentStreak = 0;
+let overallStreak = 0; // total words guessed
+let currentStreak = 0; // current streak of correctly guessed words
 
 const startWordle = () => {
 	// Gets a random word from the array
@@ -34,7 +34,7 @@ const resetWordle = () => {
 		}
 	}
 
-	keyboard[0].removeChild(keyboard[0].firstElementChild);
+	keyboard[0].removeChild(keyboard[0].firstElementChild); // removes the newGameBtn
 	chosenWord.length = 0;
 	inputRow = 0;
 	letterColumn = 0;
@@ -52,38 +52,9 @@ const createNGBtn = () => {
 		focusInputRow();
 	});
 	btn.textContent = "New Game?";
-
+	// puts the btn elemtent in the first position
 	keyboard[0].insertAdjacentElement("afterbegin", btn);
 };
-
-// onscreen keyboard functionality
-for (let keyElement of keys) {
-	let key = keyElement.textContent;
-	keyElement.addEventListener("click", function (event) {
-		switch (key) {
-			case "←":
-				//console.log("Delete Pressed");
-				// apply focus function to the first element in the row
-				containerArr[inputRow].firstElementChild.focus();
-				logKey(key);
-				break;
-
-			case "↵":
-				//console.log("Enter Pressed");
-				//submitWordle();
-				// apply focus function to the first element in the row
-				containerArr[inputRow].firstElementChild.focus();
-				logKey(key);
-				break;
-			default:
-				// handle presses into divs
-				// apply focus function to the first element in the row
-				containerArr[inputRow].firstElementChild.focus();
-				//console.log(key);
-				logKey(key);
-		}
-	});
-}
 
 const updateStreak = () => {
 	const streakText = document.getElementById("wStreak");
@@ -287,13 +258,22 @@ const unfocusPreviousRow = () => {
 	}
 };
 
-// makes sure the input divs are always focused no matter where you click on the screen
-document.body.addEventListener("click", function () {
-	focusInputRow();
-});
-
 // init game state
 window.onload = () => {
 	startWordle();
 	focusInputRow();
+
+	// makes sure the input divs are always focused no matter where you click on the screen
+	document.body.addEventListener("click", function () {
+		focusInputRow();
+	});
+
+	// loops through keys array and gives it a click event listener to put letters in the divs
+	for (let i = 0; i < keys.length; i++) {
+		let key = keys[i].textContent;
+		keys[i].addEventListener("click", function () {
+			containerArr[inputRow].firstElementChild.focus();
+			logKey(key);
+		});
+	}
 };
