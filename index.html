@@ -13,6 +13,27 @@
 </head>
 
 <body>
+    <div id="helpModal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modalHeader">
+            <h3>Help Menu</h3>
+        </div>
+        <div class="modalContent">
+            <p>Guess the word in 6 tries or less!</p>
+            <p>For now, any letter combinations can be used so feel free to use anything you'd like!</p>
+            <p>After you have typed in 5 letters hit the enter key either on the screen or on your keyboard.</p>
+            <p>After each guess is made, the color of the row's tiles will change to show if the letter is in the right
+                spot (green), wrong spot but in the word (yellow), and if it's not in the word at all (red).</p>
+            <hr>
+            <h3>Potential Features:</h3>
+            <ul>
+                <li>Different Modes (Daily vs Unlimited)</li>
+                <li>Word Helper</li>
+                <li>Lightmode vs Darkmode styling</li>
+                <li>LocalStorage functionality</li>
+            </ul>
+        </div>
+    </div>
     <header>
         <h1>
             Wordle
@@ -20,7 +41,7 @@
         <nav>
             <ul>
                 <li>
-                    <button>
+                    <button id="helpBtn">
                         &#8505;
                     </button>
                 </li>
