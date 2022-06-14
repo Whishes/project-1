@@ -293,5 +293,26 @@ window.onload = () => {
 		});
 	}
 
+	// starts help modal stuff
 	initHelpModal();
+
+	// pulls from localStorage etc
+	if (localStorage.getItem("wordStreaks")) {
+		currentStreak = localStorage.getItem("wordStreaks")[0];
+		overallStreak = localStorage.getItem("wordStreaks")[2];
+	}
+	//console.log(localStorage.getItem("wordStreaks"));
+	updateStreak();
+	//console.log(currentStreak);
+	//console.log(overallStreak);
+};
+
+// Save game state on window unload
+window.onbeforeunload = () => {
+	localStorage.setItem("wordStreaks", [currentStreak, overallStreak]);
+
+	// TODO: Maybe store the board state to stop potentially cheating etc etc
+
+	// prevents any pop-ups from occurring
+	return null;
 };
