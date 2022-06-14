@@ -177,6 +177,7 @@ const logKey = (e) => {
 					inputRow++; // adds to row count to make the unfocus function work
 					createNGBtn(); // creates New Game Button
 					unfocusPreviousRow();
+					inputRow--; // moves the cursor back so the body "click" handler works
 					overallStreak++;
 					currentStreak = 0;
 					updateStreak();
@@ -265,7 +266,7 @@ window.onload = () => {
 
 	// makes sure the input divs are always focused no matter where you click on the screen
 	document.body.addEventListener("click", function () {
-		focusInputRow();
+		containerArr[inputRow].firstElementChild.focus();
 	});
 
 	// loops through keys array and gives it a click event listener to put letters in the divs
