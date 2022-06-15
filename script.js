@@ -16,7 +16,7 @@ let boardState = {
 	wordsUsed: [],
 	currentWord: [],
 };
-let greenCount;
+let greenCount = 0;
 
 // Function to choose a random word from the words array
 const startWordle = () => {
@@ -300,11 +300,8 @@ const unfocusPreviousRow = () => {
 };
 
 // Init game state
-window.onload = () => {
-	letterColumn = 0;
-	inputRow = 0;
-	remainingGuesses = 5;
-	greenCount = 0;
+
+const initGameState = () => {
 	const containerArr = document.getElementsByClassName("inputs");
 	// pulls from localStorage etc
 	if (localStorage.getItem("wordStreaks")) {
@@ -348,7 +345,7 @@ window.onload = () => {
 				letterColumn++;
 			}
 			letterColumn = 0;
-			inputRow = inputRow + 1;
+			inputRow++;
 			remainingGuesses--;
 		}
 
@@ -380,6 +377,9 @@ window.onload = () => {
 	updateStreak();
 	//console.log(currentStreak);
 	//console.log(overallStreak);
+
+	//console.log(greenCount);
+	//console.log(inputRow);
 };
 
 // Save game state on window unload
@@ -391,3 +391,5 @@ window.onbeforeunload = () => {
 	// prevents any pop-ups from occurring
 	return null;
 };
+
+initGameState();
