@@ -11,16 +11,29 @@ let remainingGuesses = 5; // guesses result count
 const wordArr = []; // user's word
 let overallStreak = 0; // total words guessed
 let currentStreak = 0; // current streak of correctly guessed words
+const storeWordsUsed = [];
+let boardState = {
+	wordsUsed: [],
+	currentWord: [],
+};
+let greenCount;
 
 // Function to choose a random word from the words array
 const startWordle = () => {
-	// Gets a random word from the array
-	const word = words[Math.floor(Math.random() * words.length)].split("");
+	let word;
+	if (boardState.currentWord.length > 0) {
+		// Gets a random word from the array
+		word = boardState.currentWord;
+	} else {
+		// Gets a random word from the array
+		word = words[Math.floor(Math.random() * words.length)].split("");
+	}
 	// loop through and put each element of the split word array into a global const chosenWord array
 	word.forEach((element) => {
 		chosenWord.push(element.toUpperCase());
 	});
-	console.log(chosenWord);
+	boardState.currentWord = chosenWord;
+	//console.log(boardState);
 };
 
 // Resets all the global variables for a new game to be played
@@ -38,6 +51,8 @@ const resetWordle = () => {
 
 	keyboard[0].removeChild(keyboard[0].firstElementChild); // removes the newGameBtn
 	chosenWord.length = 0;
+	boardState.currentWord.length = 0;
+	boardState.wordsUsed.length = 0;
 	inputRow = 0;
 	letterColumn = 0;
 	remainingGuesses = 5;
@@ -56,6 +71,7 @@ const createNGBtn = () => {
 	btn.textContent = "New Game?";
 	// puts the btn elemtent in the first position
 	keyboard[0].insertAdjacentElement("afterbegin", btn);
+	localStorage.setItem("boardState", JSON.stringify(boardState));
 };
 
 // Updates the onscreen overall and current word streak text content
@@ -100,7 +116,6 @@ const logKey = (e) => {
 
 		// only run function if the letterColumn is >= 5
 		if (letterColumn >= 5) {
-			let greenCount = 0;
 			//console.log("Enter was pressed");
 
 			const rowArr = containerArr[inputRow].children;
@@ -181,6 +196,7 @@ const logKey = (e) => {
 					unfocusPreviousRow();
 					updateStreak();
 					createNGBtn();
+					boardState.wordsUsed.push([...wordArr]);
 				} else {
 					// Check if final row. If so end game, if not move to next row
 					if (remainingGuesses <= 0) {
@@ -192,14 +208,17 @@ const logKey = (e) => {
 						overallStreak++;
 						currentStreak = 0;
 						updateStreak();
+						boardState.wordsUsed.push([...wordArr]);
 					} else {
 						// everything else
+						boardState.wordsUsed.push([...wordArr]);
 						inputRow++; // moves cursor to next row
 						letterColumn = 0; // moves cursor to first column
-						wordArr.length = 0; // empties user word guess
+						//console.log(storeBoardState);
 						remainingGuesses--; // deducts guess count by 1
 						unfocusPreviousRow(); // removes event listeners and blurs previous row
 						focusInputRow(); // adds event listeners and focuses new row
+						wordArr.length = 0; // empties user word guess
 					}
 				}
 			} else {
@@ -282,8 +301,63 @@ const unfocusPreviousRow = () => {
 
 // Init game state
 window.onload = () => {
-	startWordle();
+	letterColumn = 0;
+	inputRow = 0;
+	remainingGuesses = 5;
+	greenCount = 0;
+	const containerArr = document.getElementsByClassName("inputs");
+	// pulls from localStorage etc
+	if (localStorage.getItem("wordStreaks")) {
+		currentStreak = localStorage.getItem("wordStreaks")[0];
+		overallStreak = localStorage.getItem("wordStreaks")[2];
+	}
+
+	if (localStorage.getItem("boardState")) {
+		boardState = JSON.parse(localStorage.getItem("boardState"));
+		console.log(boardState);
+
+		// loop through the boardState.wordsUsed to the y values sorted
+		for (let i = 0; i < boardState.wordsUsed.length; i++) {
+			for (let j = 0; j < boardState.wordsUsed[i].length; j++) {
+				// when typed put letter in y row in x column and + 1 the x value
+				containerArr[inputRow].children[letterColumn].textContent =
+					boardState.wordsUsed[i][j];
+				//console.log(boardState.wordsUsed[i][j]);
+				//console.log(boardState.currentWord[j]);
+
+				if (boardState.currentWord[j] === boardState.wordsUsed[i][j]) {
+					//console.log("green", [i], [j]);
+					containerArr[inputRow].children[letterColumn].style.backgroundColor =
+						"#78ca00";
+
+					greenCount++;
+					//console.log("letter is in the correct column");
+				} else if (
+					boardState.currentWord.includes(boardState.wordsUsed[i][j])
+				) {
+					//console.log("yellow", [i], [j]);
+					containerArr[inputRow].children[letterColumn].style.backgroundColor =
+						"#ffef0d";
+				} else {
+					//console.log("letter is in not in the word");
+					//console.log("red", [i], [j]);
+					containerArr[inputRow].children[letterColumn].style.backgroundColor =
+						"#aa0000";
+				}
+
+				letterColumn++;
+			}
+			letterColumn = 0;
+			inputRow = inputRow + 1;
+			remainingGuesses--;
+		}
+
+		if (greenCount >= 5 || remainingGuesses <= 0) {
+			createNGBtn();
+		}
+	}
 	focusInputRow();
+	startWordle();
 
 	// makes sure the input divs are always focused no matter where you click on the screen
 	document.body.addEventListener("click", function () {
@@ -302,11 +376,6 @@ window.onload = () => {
 	// starts help modal stuff
 	initHelpModal();
 
-	// pulls from localStorage etc
-	if (localStorage.getItem("wordStreaks")) {
-		currentStreak = localStorage.getItem("wordStreaks")[0];
-		overallStreak = localStorage.getItem("wordStreaks")[2];
-	}
 	//console.log(localStorage.getItem("wordStreaks"));
 	updateStreak();
 	//console.log(currentStreak);
@@ -318,7 +387,7 @@ window.onbeforeunload = () => {
 	localStorage.setItem("wordStreaks", [currentStreak, overallStreak]);
 
 	// TODO: Maybe store the board state to stop potentially cheating etc etc
-
+	localStorage.setItem("boardState", JSON.stringify(boardState));
 	// prevents any pop-ups from occurring
 	return null;
 };
