@@ -11,7 +11,7 @@ let remainingGuesses = 5; // guesses result count
 const wordArr = []; // user's word
 let overallStreak = 0; // total words guessed
 let currentStreak = 0; // current streak of correctly guessed words
-const storeWordsUsed = [];
+const greenLetters = [];
 let boardState = {
 	wordsUsed: [],
 	currentWord: [],
@@ -57,6 +57,28 @@ const resetWordle = () => {
 	letterColumn = 0;
 	remainingGuesses = 5;
 	wordArr.length = 0;
+	greenCount = 0;
+};
+
+// Create Word Helper Button
+const createWHBtn = () => {
+	const btn = document.getElementById("helperBtn");
+	btn.addEventListener("click", function () {
+		//console.log("helper btn works");
+		let helpWord = [];
+		if (boardState.wordsUsed.length === 0) {
+			helpWord = words[Math.floor(Math.random() * words.length)].split(" ");
+		} else {
+			for (i = 0; i < words.length; i++) {
+				if (words[i].match(greenLetters.join(" ")) !== null) {
+					helpWord = words[i];
+				}
+			}
+		}
+		console.log(helpWord);
+		//console.log(boardState.wordsUsed[boardState.wordsUsed.length - 1]);
+		console.log(greenLetters);
+	});
 };
 
 // Create New Game Btn function
@@ -67,11 +89,11 @@ const createNGBtn = () => {
 		resetWordle();
 		startWordle();
 		focusInputRow();
+		localStorage.clear("boardState");
 	});
 	btn.textContent = "New Game?";
 	// puts the btn elemtent in the first position
 	keyboard[0].insertAdjacentElement("afterbegin", btn);
-	localStorage.setItem("boardState", JSON.stringify(boardState));
 };
 
 // Updates the onscreen overall and current word streak text content
@@ -148,6 +170,7 @@ const logKey = (e) => {
 							}, 2000);
 						}, i * 300);
 						greenCount++;
+						//greenLetters.push(wordArr[i]);
 						//console.log("letter is in the correct column");
 					} else if (chosenWord.includes(wordArr[i])) {
 						//console.log("letter is in the word but not right column");
@@ -165,6 +188,7 @@ const logKey = (e) => {
 								rowArr[i].style.backgroundColor = "#ffef0d";
 							}, 2000);
 						}, i * 300);
+						//greenLetters.push(".");
 					} else {
 						//console.log("letter is in not in the word");
 						setTimeout(function () {
@@ -181,6 +205,7 @@ const logKey = (e) => {
 								rowArr[i].style.backgroundColor = "#aa0000";
 							}, 2000);
 						}, i * 300);
+						//greenLetters.push(".");
 					}
 				}
 				// check if all are correct, if not move to next row etc
@@ -200,7 +225,7 @@ const logKey = (e) => {
 				} else {
 					// Check if final row. If so end game, if not move to next row
 					if (remainingGuesses <= 0) {
-						alert("You lost this round");
+						alert(`You lost! The secret word is ${chosenWord.join("")}`);
 						inputRow++; // adds to row count to make the unfocus function work
 						createNGBtn(); // creates New Game Button
 						unfocusPreviousRow();
@@ -219,6 +244,7 @@ const logKey = (e) => {
 						unfocusPreviousRow(); // removes event listeners and blurs previous row
 						focusInputRow(); // adds event listeners and focuses new row
 						wordArr.length = 0; // empties user word guess
+						greenCount = 0;
 					}
 				}
 			} else {
@@ -304,12 +330,16 @@ const unfocusPreviousRow = () => {
 const initGameState = () => {
 	const containerArr = document.getElementsByClassName("inputs");
 	// pulls from localStorage etc
-	if (localStorage.getItem("wordStreaks")) {
-		currentStreak = localStorage.getItem("wordStreaks")[0];
-		overallStreak = localStorage.getItem("wordStreaks")[2];
+	if (localStorage.getItem("wordStreaks") != 0) {
+		//console.log(localStorage.getItem("wordStreaks"));
+		let streakArr = JSON.parse(localStorage.getItem("wordStreaks"));
+		//console.log(streakArr);
+		currentStreak = streakArr[0];
+		overallStreak = streakArr[1];
 	}
 
 	if (localStorage.getItem("boardState")) {
+		let testGreen = 0;
 		boardState = JSON.parse(localStorage.getItem("boardState"));
 		console.log(boardState);
 
@@ -327,7 +357,8 @@ const initGameState = () => {
 					containerArr[inputRow].children[letterColumn].style.backgroundColor =
 						"#78ca00";
 
-					greenCount++;
+					testGreen++;
+					//greenLetters.push(wordArr[i]);
 					//console.log("letter is in the correct column");
 				} else if (
 					boardState.currentWord.includes(boardState.wordsUsed[i][j])
@@ -335,26 +366,42 @@ const initGameState = () => {
 					//console.log("yellow", [i], [j]);
 					containerArr[inputRow].children[letterColumn].style.backgroundColor =
 						"#ffef0d";
+					//greenLetters.push(".");
 				} else {
 					//console.log("letter is in not in the word");
 					//console.log("red", [i], [j]);
 					containerArr[inputRow].children[letterColumn].style.backgroundColor =
 						"#aa0000";
+					//greenLetters.push(".");
 				}
 
 				letterColumn++;
+				//greenLetters.length = 0;
 			}
-			letterColumn = 0;
-			inputRow++;
-			remainingGuesses--;
+			if (i < boardState.wordsUsed.length - 1 && testGreen < 5) {
+				testGreen = 0;
+				remainingGuesses--;
+				inputRow++;
+				letterColumn = 0;
+			}
+			if (testGreen >= 5) {
+				inputRow++;
+				unfocusPreviousRow();
+				inputRow--;
+			}
 		}
-
+		greenCount = testGreen;
 		if (greenCount >= 5 || remainingGuesses <= 0) {
 			createNGBtn();
+			if (boardState.wordsUsed.length >= 2) {
+				unfocusPreviousRow();
+			}
 		}
 	}
 	focusInputRow();
 	startWordle();
+	console.log(greenCount);
+	console.log(remainingGuesses);
 
 	// makes sure the input divs are always focused no matter where you click on the screen
 	document.body.addEventListener("click", function () {
@@ -373,6 +420,9 @@ const initGameState = () => {
 	// starts help modal stuff
 	initHelpModal();
 
+	// starts helper button stuff
+	//createWHBtn();
+
 	//console.log(localStorage.getItem("wordStreaks"));
 	updateStreak();
 	//console.log(currentStreak);
@@ -384,10 +434,15 @@ const initGameState = () => {
 
 // Save game state on window unload
 window.onbeforeunload = () => {
-	localStorage.setItem("wordStreaks", [currentStreak, overallStreak]);
+	if (localStorage.getItem("boardState") === JSON.stringify(boardState)) {
+		console.log("Same Board state");
+	} else {
+		streakArr = [currentStreak, overallStreak];
+		localStorage.setItem("wordStreaks", JSON.stringify(streakArr));
 
-	// TODO: Maybe store the board state to stop potentially cheating etc etc
-	localStorage.setItem("boardState", JSON.stringify(boardState));
+		localStorage.setItem("boardState", JSON.stringify(boardState));
+	}
+	//localStorage.removeItem("boardState");
 	// prevents any pop-ups from occurring
 	return null;
 };
