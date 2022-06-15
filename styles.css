@@ -107,12 +107,13 @@ button {
     font-weight: bold;
     text-transform: uppercase;
     box-shadow: 1px 2px 1px 1px black;
-    transform: translate3d(0,0,0);
+    -webkit-tap-highlight-color: transparent; 
 }
 
 .key:active {
     background-color: #b47cfb;
     color: white;
+    -webkit-tap-highlight-color: transparent; 
 }
 
 #inputContainer {
