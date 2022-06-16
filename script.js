@@ -15,25 +15,37 @@ const greenLetters = [];
 let boardState = {
 	wordsUsed: [],
 	currentWord: [],
+	gameState: "ACTIVE",
 };
 let greenCount = 0;
 
 // Function to choose a random word from the words array
 const startWordle = () => {
-	let word;
+	// check if there's a word currently stored in the boardState
 	if (boardState.currentWord.length > 0) {
 		// Gets a random word from the array
-		word = boardState.currentWord;
+		//word = boardState.currentWord;
+		//chosenWord.push(boardState.currentWord);
+		boardState.currentWord.forEach((element) => {
+			chosenWord.push(element.toUpperCase());
+		});
 	} else {
+		let word;
+
 		// Gets a random word from the array
-		word = words[Math.floor(Math.random() * words.length)].split("");
+		word = words[Math.floor(Math.random() * words.length)]
+			.toUpperCase()
+			.split("");
+
+		word.forEach((element) => {
+			chosenWord.push(element.toUpperCase());
+		});
+		boardState.currentWord = chosenWord;
 	}
 	// loop through and put each element of the split word array into a global const chosenWord array
-	word.forEach((element) => {
-		chosenWord.push(element.toUpperCase());
-	});
-	boardState.currentWord = chosenWord;
-	//console.log(boardState);
+	//
+	console.log(boardState);
+	console.log(chosenWord);
 };
 
 // Resets all the global variables for a new game to be played
@@ -53,6 +65,7 @@ const resetWordle = () => {
 	chosenWord.length = 0;
 	boardState.currentWord.length = 0;
 	boardState.wordsUsed.length = 0;
+	boardState.gameState = "ACTIVE";
 	inputRow = 0;
 	letterColumn = 0;
 	remainingGuesses = 5;
@@ -121,176 +134,191 @@ const initHelpModal = () => {
 
 // Handles everything to do with letters being clicked/types + most of the game logic
 const logKey = (e) => {
-	let letter;
-	// checks if the passed value is from a keyboard event or from the onscreen keyboard
-	if (e.constructor.name === "KeyboardEvent") {
-		letter = e.key.toUpperCase();
-	} else {
-		letter = e.toUpperCase();
-	}
-	//console.log(letter);
+	if (boardState.gameState === "ACTIVE") {
+		let letter;
+		// checks if the passed value is from a keyboard event or from the onscreen keyboard
+		if (e.constructor.name === "KeyboardEvent") {
+			letter = e.key.toUpperCase();
+		} else {
+			letter = e.toUpperCase();
+		}
+		//console.log(letter);
 
-	// checks if letter is number vs capital letter
-	const letterMatch = letter.match(/[A-Z]/g);
-	if (e.keyCode === 13 || e === "↵") {
-		// Do this if Enter is pressed
-		// when enter is pressed plus the x value and run a function to check result
+		// checks if letter is number vs capital letter
+		const letterMatch = letter.match(/[A-Z]/g);
+		if (e.keyCode === 13 || e === "↵") {
+			// Do this if Enter is pressed
+			// when enter is pressed plus the x value and run a function to check result
 
-		// only run function if the letterColumn is >= 5
-		if (letterColumn >= 5) {
-			//console.log("Enter was pressed");
+			// only run function if the letterColumn is >= 5
+			if (letterColumn >= 5) {
+				//console.log("Enter was pressed");
 
-			const rowArr = containerArr[inputRow].children;
-			// loop through y row and get all x values and push into an array
+				const rowArr = containerArr[inputRow].children;
+				// loop through y row and get all x values and push into an array
 
-			console.log(wordArr);
+				//console.log(wordArr);
 
-			// TODO: Check if user input word is an actual word by looping through word array
-			// check if the word actually exists
-			if (words.includes(wordArr.join("").toLocaleLowerCase())) {
-				// compare the wordArr result to the chosenWord array
-				for (let i = 0; i < chosenWord.length; i++) {
-					// TODO: Clean up the setTimeout function by trying to just have 1 that wraps the whole if statement instead of a timeout in each one
+				// TODO: Check if user input word is an actual word by looping through word array
+				// check if the word actually exists
+				if (words.includes(wordArr.join("").toLocaleLowerCase())) {
+					// compare the wordArr result to the chosenWord array
+					for (let i = 0; i < chosenWord.length; i++) {
+						// TODO: Clean up the setTimeout function by trying to just have 1 that wraps the whole if statement instead of a timeout in each one
 
-					//setTimeout(function () {}, i * 500);
+						//setTimeout(function () {}, i * 500);
 
-					if (chosenWord[i] === wordArr[i]) {
-						setTimeout(function () {
-							rowArr[i].animate(
-								[
-									{ transform: "rotateY(0deg)" },
-									{ transform: "rotateY(180deg)" },
-									{ transform: "rotateY(360deg)", backgroundColor: "#78ca00" },
-								],
-								2000
-							);
-
+						if (chosenWord[i] === wordArr[i]) {
 							setTimeout(function () {
-								rowArr[i].style.backgroundColor = "#78ca00";
-							}, 2000);
-						}, i * 300);
-						greenCount++;
-						//greenLetters.push(wordArr[i]);
-						//console.log("letter is in the correct column");
-					} else if (chosenWord.includes(wordArr[i])) {
-						//console.log("letter is in the word but not right column");
-						setTimeout(function () {
-							rowArr[i].animate(
-								[
-									{ transform: "rotateY(0deg)" },
-									{ transform: "rotateY(180deg)" },
-									{ transform: "rotateY(360deg)", backgroundColor: "#ffef0d" },
-								],
-								2000
-							);
+								rowArr[i].animate(
+									[
+										{ transform: "rotateY(0deg)" },
+										{ transform: "rotateY(180deg)" },
+										{
+											transform: "rotateY(360deg)",
+											backgroundColor: "#78ca00",
+										},
+									],
+									2000
+								);
 
+								setTimeout(function () {
+									rowArr[i].style.backgroundColor = "#78ca00";
+								}, 2000);
+							}, i * 300);
+							greenCount++;
+							//greenLetters.push(wordArr[i]);
+							//console.log("letter is in the correct column");
+						} else if (chosenWord.includes(wordArr[i])) {
+							//console.log("letter is in the word but not right column");
 							setTimeout(function () {
-								rowArr[i].style.backgroundColor = "#ffef0d";
-							}, 2000);
-						}, i * 300);
-						//greenLetters.push(".");
-					} else {
-						//console.log("letter is in not in the word");
-						setTimeout(function () {
-							rowArr[i].animate(
-								[
-									{ transform: "rotateY(0deg)" },
-									{ transform: "rotateY(180deg)" },
-									{ transform: "rotateY(360deg)", backgroundColor: "#aa0000" },
-								],
-								2000
-							);
+								rowArr[i].animate(
+									[
+										{ transform: "rotateY(0deg)" },
+										{ transform: "rotateY(180deg)" },
+										{
+											transform: "rotateY(360deg)",
+											backgroundColor: "#ffef0d",
+										},
+									],
+									2000
+								);
 
+								setTimeout(function () {
+									rowArr[i].style.backgroundColor = "#ffef0d";
+								}, 2000);
+							}, i * 300);
+							//greenLetters.push(".");
+						} else {
+							//console.log("letter is in not in the word");
 							setTimeout(function () {
-								rowArr[i].style.backgroundColor = "#aa0000";
-							}, 2000);
-						}, i * 300);
-						//greenLetters.push(".");
+								rowArr[i].animate(
+									[
+										{ transform: "rotateY(0deg)" },
+										{ transform: "rotateY(180deg)" },
+										{
+											transform: "rotateY(360deg)",
+											backgroundColor: "#aa0000",
+										},
+									],
+									2000
+								);
+
+								setTimeout(function () {
+									rowArr[i].style.backgroundColor = "#aa0000";
+								}, 2000);
+							}, i * 300);
+							//greenLetters.push(".");
+						}
 					}
-				}
-				// check if all are correct, if not move to next row etc
-				if (greenCount >= 5) {
-					alert(
-						`You got the word ${chosenWord.join("")} in ${
-							6 - remainingGuesses
-						} guesses`
-					);
-					inputRow++; // adds to row count to make the unfocus function work
-					overallStreak++;
-					currentStreak++;
-					unfocusPreviousRow();
-					updateStreak();
-					createNGBtn();
-					boardState.wordsUsed.push([...wordArr]);
-				} else {
-					// Check if final row. If so end game, if not move to next row
-					if (remainingGuesses <= 0) {
-						alert(`You lost! The secret word is ${chosenWord.join("")}`);
-						inputRow++; // adds to row count to make the unfocus function work
-						createNGBtn(); // creates New Game Button
-						unfocusPreviousRow();
-						inputRow--; // moves the cursor back so the body "click" handler works
+					// check if all are correct, if not move to next row etc
+					if (greenCount >= 5) {
+						alert(
+							`You got the word ${chosenWord.join("")} in ${
+								6 - remainingGuesses
+							} guesses`
+						);
+						//inputRow++; // adds to row count to make the unfocus function work
 						overallStreak++;
-						currentStreak = 0;
+						currentStreak++;
+						//unfocusPreviousRow();
 						updateStreak();
+						createNGBtn();
 						boardState.wordsUsed.push([...wordArr]);
+						boardState.gameState = "WON";
 					} else {
-						// everything else
-						boardState.wordsUsed.push([...wordArr]);
-						inputRow++; // moves cursor to next row
-						letterColumn = 0; // moves cursor to first column
-						//console.log(storeBoardState);
-						remainingGuesses--; // deducts guess count by 1
-						unfocusPreviousRow(); // removes event listeners and blurs previous row
-						focusInputRow(); // adds event listeners and focuses new row
-						wordArr.length = 0; // empties user word guess
-						greenCount = 0;
+						// Check if final row. If so end game, if not move to next row
+						if (remainingGuesses <= 0) {
+							alert(`You lost! The secret word is ${chosenWord.join("")}`);
+							//inputRow++; // adds to row count to make the unfocus function work
+							createNGBtn(); // creates New Game Button
+							//unfocusPreviousRow();
+							//inputRow--; // moves the cursor back so the body "click" handler works
+							overallStreak++;
+							currentStreak = 0;
+							updateStreak();
+							boardState.wordsUsed.push([...wordArr]);
+							boardState.gameState = "LOST";
+						} else {
+							// everything else
+							boardState.wordsUsed.push([...wordArr]);
+							inputRow++; // moves cursor to next row
+							letterColumn = 0; // moves cursor to first column
+							//console.log(storeBoardState);
+							remainingGuesses--; // deducts guess count by 1
+							unfocusPreviousRow(); // removes event listeners and blurs previous row
+							focusInputRow(); // adds event listeners and focuses new row
+							wordArr.length = 0; // empties user word guess
+							greenCount = 0;
+						}
 					}
-				}
-			} else {
-				// do this if the word doesn't exist
-				for (let i = 0; i < rowArr.length; i++) {
-					rowArr[i].style.animation = "shake 1s ease-in";
-					setTimeout(function () {
-						rowArr[i].style.animation = "";
-					}, 1000);
+				} else {
+					// do this if the word doesn't exist
+					for (let i = 0; i < rowArr.length; i++) {
+						rowArr[i].style.animation = "shake 1s ease-in";
+						setTimeout(function () {
+							rowArr[i].style.animation = "";
+						}, 1000);
+					}
 				}
 			}
+		} else if (e.keyCode === 8 || e === "←") {
+			// Do this is if backspace has been pressed
+			//console.log("backspace was pressed");
+
+			// stops backspace being pressed if there's no letters
+			if (letterColumn >= 1) {
+				// move the position of the "cursor" back one
+				letterColumn--;
+				// clear the x value
+				containerArr[inputRow].children[letterColumn].textContent = "";
+
+				wordArr.pop();
+			}
+			//console.log(containerArr[inputRow].children[letterColumn].textContent);
+		} else if (
+			!letterMatch ||
+			(letterMatch.length > 1 && !(e.keyCode === 8)) ||
+			(e.keyCode >= 112 && e.keyCode <= 123)
+		) {
+			// Do nothing if a number or anything not a letter is pressed
+
+			//console.log("number or something was pressed");
+			return;
+		} else {
+			// Do this if a letter is pressed
+
+			// stop the auto-move etc when the x value >= 5
+			if (letterColumn < 5) {
+				// when typed put letter in y row in x column and + 1 the x value
+				containerArr[inputRow].children[letterColumn].textContent = letter;
+				//console.log(containerArr[inputRow].children[letterColumn]);
+				letterColumn++;
+				wordArr.push(letter);
+			}
 		}
-	} else if (e.keyCode === 8 || e === "←") {
-		// Do this is if backspace has been pressed
-		//console.log("backspace was pressed");
-
-		// stops backspace being pressed if there's no letters
-		if (letterColumn >= 1) {
-			// move the position of the "cursor" back one
-			letterColumn--;
-			// clear the x value
-			containerArr[inputRow].children[letterColumn].textContent = "";
-
-			wordArr.pop();
-		}
-		//console.log(containerArr[inputRow].children[letterColumn].textContent);
-	} else if (
-		!letterMatch ||
-		(letterMatch.length > 1 && !(e.keyCode === 8)) ||
-		(e.keyCode >= 112 && e.keyCode <= 123)
-	) {
-		// Do nothing if a number or anything not a letter is pressed
-
-		//console.log("number or something was pressed");
-		return;
 	} else {
-		// Do this if a letter is pressed
-
-		// stop the auto-move etc when the x value >= 5
-		if (letterColumn < 5) {
-			// when typed put letter in y row in x column and + 1 the x value
-			containerArr[inputRow].children[letterColumn].textContent = letter;
-			//console.log(containerArr[inputRow].children[letterColumn]);
-			letterColumn++;
-			wordArr.push(letter);
-		}
+		console.log(`Game ${boardState.gameState} so you can't keep playing`);
 	}
 };
 
@@ -326,7 +354,6 @@ const unfocusPreviousRow = () => {
 };
 
 // Init game state
-
 const initGameState = () => {
 	const containerArr = document.getElementsByClassName("inputs");
 	// pulls from localStorage etc
@@ -337,11 +364,11 @@ const initGameState = () => {
 		currentStreak = streakArr[0];
 		overallStreak = streakArr[1];
 	}
-
+	// gets the boardState from localStorage and puts in on the screen
 	if (localStorage.getItem("boardState")) {
 		let testGreen = 0;
 		boardState = JSON.parse(localStorage.getItem("boardState"));
-		console.log(boardState);
+		console.log(boardState.gameState);
 
 		// loop through the boardState.wordsUsed to the y values sorted
 		for (let i = 0; i < boardState.wordsUsed.length; i++) {
@@ -400,8 +427,8 @@ const initGameState = () => {
 	}
 	focusInputRow();
 	startWordle();
-	console.log(greenCount);
-	console.log(remainingGuesses);
+	//console.log(greenCount);
+	//console.log(remainingGuesses);
 
 	// makes sure the input divs are always focused no matter where you click on the screen
 	document.body.addEventListener("click", function () {
