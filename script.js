@@ -12,6 +12,8 @@ const wordArr = []; // user's word
 let overallStreak = 0; // total words guessed
 let currentStreak = 0; // current streak of correctly guessed words
 const greenLetters = [];
+const yellowLetters = [];
+const redLetters = [];
 let boardState = {
 	wordsUsed: [],
 	currentWord: [],
@@ -71,26 +73,109 @@ const resetWordle = () => {
 	remainingGuesses = 5;
 	wordArr.length = 0;
 	greenCount = 0;
+	greenLetters.length = 0;
+	yellowLetters.length = 0;
+	redLetters.length = 0;
 };
 
 // Create Word Helper Button
 const createWHBtn = () => {
-	const btn = document.getElementById("helperBtn");
+	const btn = document.getElementById("wordHelperBtn");
 	btn.addEventListener("click", function () {
-		//console.log("helper btn works");
-		let helpWord = [];
-		if (boardState.wordsUsed.length === 0) {
-			helpWord = words[Math.floor(Math.random() * words.length)].split(" ");
-		} else {
-			for (i = 0; i < words.length; i++) {
-				if (words[i].match(greenLetters.join(" ")) !== null) {
-					helpWord = words[i];
+		if (boardState.gameState === "ACTIVE") {
+			//console.log("works 1");
+			//console.log("helper btn works");
+			let wordArr = [];
+			let wordStr = "";
+			//console.log(greenLetters);
+
+			if (boardState.wordsUsed.length <= 0) {
+				// currently works
+				wordArr = ["A", "U", "D", "I", "O"];
+				//console.log("works 2");
+				wordStr = wordArr.join("");
+			} else {
+				wordArr = greenLetters[greenLetters.length - 1]; // gets the latest entry in the arr eg... [[....S], [.E..S], etc]
+				//console.log("works 3");
+				const result = words.filter((word) =>
+					word.match(wordArr.join("").toLowerCase())
+				);
+
+				const yellowFilterWord = () => {
+					const matchedWords = [];
+					for (let i = 0; i < result.length; i++) {
+						let isGood;
+						for (let j = 0; j < yellowLetters.length; j++) {
+							//console.log(yellowLetters[j].join(""));
+							if (result[i].includes(yellowLetters[j].join("").toLowerCase())) {
+								//matchedWords.push(yellowResult[i]);
+								isGood = true;
+							} else {
+								isGood = false;
+							}
+						}
+						if (isGood === true) {
+							matchedWords.push(result[i]);
+						}
+					}
+					console.log(matchedWords);
+					return matchedWords;
+				};
+
+				let yellowResult;
+
+				if (yellowLetters.length > 0) {
+					yellowResult = yellowFilterWord();
+				} else {
+					result;
+				}
+
+				const redFilterWord = () => {
+					const matchedWords = [];
+					for (let i = 0; i < yellowResult.length; i++) {
+						let isGood;
+						for (let j = 0; j < redLetters.length; j++) {
+							//console.log(redLetters[j]);
+							if (yellowResult[i].includes(redLetters[j].toLowerCase())) {
+								//matchedWords.push(yellowResult[i]);
+								isGood = false;
+								break;
+							} else {
+								isGood = true;
+							}
+						}
+						if (isGood === true) {
+							matchedWords.push(yellowResult[i]);
+						}
+					}
+					//console.log(matchedWords);
+					return matchedWords;
+				};
+				const redResult = redFilterWord();
+
+				//console.log(result);
+				//console.log(yellowResult);
+				console.log(redResult);
+				if (redResult.length === 1) {
+					wordStr = "NO WORD";
+				} else {
+					wordStr = redResult[Math.floor(Math.random() * redResult.length)];
 				}
 			}
+
+			if (wordStr === "NO WORD") {
+				window.alert("No more hints to give :) Good Luck");
+			} else {
+				window.alert(`Recommended word to use is ${wordStr}`);
+			}
+			//console.log(boardState.wordsUsed[boardState.wordsUsed.length - 1]);
+			//console.log(greenLetters, "green letters");
+			//console.log(yellowLetters, "yellow letters");
+			//console.log(redLetters, "red letters");
+			//console.log(wordStr, "word");
+		} else {
+			console.log("helper gameState not working");
 		}
-		console.log(helpWord);
-		//console.log(boardState.wordsUsed[boardState.wordsUsed.length - 1]);
-		console.log(greenLetters);
 	});
 };
 
@@ -136,6 +221,8 @@ const initHelpModal = () => {
 const logKey = (e) => {
 	if (boardState.gameState === "ACTIVE") {
 		let letter;
+		const currentRowGreen = [];
+		const currentRowYellow = [];
 		// checks if the passed value is from a keyboard event or from the onscreen keyboard
 		if (e.constructor.name === "KeyboardEvent") {
 			letter = e.key.toUpperCase();
@@ -161,7 +248,7 @@ const logKey = (e) => {
 
 				// TODO: Check if user input word is an actual word by looping through word array
 				// check if the word actually exists
-				if (words.includes(wordArr.join("").toLocaleLowerCase())) {
+				if (words.includes(wordArr.join("").toLowerCase())) {
 					// compare the wordArr result to the chosenWord array
 					for (let i = 0; i < chosenWord.length; i++) {
 						// TODO: Clean up the setTimeout function by trying to just have 1 that wraps the whole if statement instead of a timeout in each one
@@ -169,6 +256,9 @@ const logKey = (e) => {
 						//setTimeout(function () {}, i * 500);
 
 						if (chosenWord[i] === wordArr[i]) {
+							currentRowGreen.push(wordArr[i]);
+							//currentRowYellow.push(".");
+							greenCount++;
 							setTimeout(function () {
 								rowArr[i].animate(
 									[
@@ -186,11 +276,12 @@ const logKey = (e) => {
 									rowArr[i].style.backgroundColor = "#78ca00";
 								}, 2000);
 							}, i * 300);
-							greenCount++;
-							//greenLetters.push(wordArr[i]);
+
 							//console.log("letter is in the correct column");
 						} else if (chosenWord.includes(wordArr[i])) {
 							//console.log("letter is in the word but not right column");
+							currentRowGreen.push(".");
+							currentRowYellow.push(wordArr[i]);
 							setTimeout(function () {
 								rowArr[i].animate(
 									[
@@ -208,9 +299,11 @@ const logKey = (e) => {
 									rowArr[i].style.backgroundColor = "#ffef0d";
 								}, 2000);
 							}, i * 300);
-							//greenLetters.push(".");
 						} else {
 							//console.log("letter is in not in the word");
+							currentRowGreen.push(".");
+							//currentRowYellow.push(".");
+							redLetters.push(wordArr[i]);
 							setTimeout(function () {
 								rowArr[i].animate(
 									[
@@ -228,7 +321,6 @@ const logKey = (e) => {
 									rowArr[i].style.backgroundColor = "#aa0000";
 								}, 2000);
 							}, i * 300);
-							//greenLetters.push(".");
 						}
 					}
 					// check if all are correct, if not move to next row etc
@@ -270,6 +362,9 @@ const logKey = (e) => {
 							focusInputRow(); // adds event listeners and focuses new row
 							wordArr.length = 0; // empties user word guess
 							greenCount = 0;
+							greenLetters.push(currentRowGreen);
+							yellowLetters.push(currentRowYellow);
+							//greenLetters.length = 0;
 						}
 					}
 				} else {
@@ -368,48 +463,49 @@ const initGameState = () => {
 	if (localStorage.getItem("boardState")) {
 		let testGreen = 0;
 		boardState = JSON.parse(localStorage.getItem("boardState"));
-		console.log(boardState.gameState);
+		//console.log(boardState.gameState);
 
 		// loop through the boardState.wordsUsed to the y values sorted
 		for (let i = 0; i < boardState.wordsUsed.length; i++) {
+			const currentRowGreen = [];
+			const currentRowYellow = [];
 			for (let j = 0; j < boardState.wordsUsed[i].length; j++) {
 				// when typed put letter in y row in x column and + 1 the x value
 				containerArr[inputRow].children[letterColumn].textContent =
 					boardState.wordsUsed[i][j];
-				//console.log(boardState.wordsUsed[i][j]);
-				//console.log(boardState.currentWord[j]);
 
 				if (boardState.currentWord[j] === boardState.wordsUsed[i][j]) {
-					//console.log("green", [i], [j]);
 					containerArr[inputRow].children[letterColumn].style.backgroundColor =
 						"#78ca00";
 
 					testGreen++;
-					//greenLetters.push(wordArr[i]);
-					//console.log("letter is in the correct column");
+					currentRowGreen.push(boardState.wordsUsed[i][j]);
 				} else if (
 					boardState.currentWord.includes(boardState.wordsUsed[i][j])
 				) {
-					//console.log("yellow", [i], [j]);
 					containerArr[inputRow].children[letterColumn].style.backgroundColor =
 						"#ffef0d";
-					//greenLetters.push(".");
+					currentRowYellow.push(boardState.wordsUsed[i][j]);
+					currentRowGreen.push(".");
 				} else {
-					//console.log("letter is in not in the word");
-					//console.log("red", [i], [j]);
 					containerArr[inputRow].children[letterColumn].style.backgroundColor =
 						"#aa0000";
-					//greenLetters.push(".");
+					redLetters.push(boardState.wordsUsed[i][j]);
+					currentRowGreen.push(".");
 				}
 
 				letterColumn++;
 				//greenLetters.length = 0;
 			}
-			if (i < boardState.wordsUsed.length - 1 && testGreen < 5) {
+			if (i < boardState.wordsUsed.length && testGreen < 5) {
 				testGreen = 0;
 				remainingGuesses--;
 				inputRow++;
 				letterColumn = 0;
+				greenLetters.push(currentRowGreen);
+				if (currentRowYellow.length > 0) {
+					yellowLetters.push(currentRowYellow);
+				}
 			}
 			if (testGreen >= 5) {
 				inputRow++;
@@ -417,6 +513,10 @@ const initGameState = () => {
 				inputRow--;
 			}
 		}
+
+		console.log(greenLetters);
+		console.log(yellowLetters);
+		console.log(redLetters);
 		greenCount = testGreen;
 		if (greenCount >= 5 || remainingGuesses <= 0) {
 			createNGBtn();
@@ -448,7 +548,7 @@ const initGameState = () => {
 	initHelpModal();
 
 	// starts helper button stuff
-	//createWHBtn();
+	createWHBtn();
 
 	//console.log(localStorage.getItem("wordStreaks"));
 	updateStreak();
