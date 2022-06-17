@@ -20,6 +20,7 @@ let boardState = {
 	gameState: "ACTIVE",
 };
 let greenCount = 0;
+let previousHint = "";
 
 // Function to choose a random word from the words array
 const startWordle = () => {
@@ -39,15 +40,14 @@ const startWordle = () => {
 			.toUpperCase()
 			.split("");
 
+		// loop through and put each element of the split word array into a global const chosenWord array
 		word.forEach((element) => {
 			chosenWord.push(element.toUpperCase());
 		});
 		boardState.currentWord = chosenWord;
 	}
-	// loop through and put each element of the split word array into a global const chosenWord array
-	//
-	console.log(boardState);
-	console.log(chosenWord);
+	//console.log(boardState);
+	//console.log(chosenWord);
 };
 
 // Resets all the global variables for a new game to be played
@@ -107,60 +107,91 @@ const createWHBtn = () => {
 					const matchedWords = [];
 					if (yellowLetters.length > 0) {
 						for (let i = 0; i < result.length; i++) {
-							let isGood;
-							for (let j = 0; j < yellowLetters.length; j++) {
-								//console.log(yellowLetters[j].join(""));
+							//console.log(result[i], i);
+							// result[i] is each individual word
+							let testWord = "";
+							// loop through the yellowLetters array and repeatetdly test to see if every yellow letter is present
+							for (
+								let j = 0;
+								j < yellowLetters[yellowLetters.length - 1].length;
+								j++
+							) {
+								// yellowLetters[j] is each individual yellow letter
 								if (
-									result[i].includes(yellowLetters[j].join("").toLowerCase())
+									result[i].includes(
+										yellowLetters[yellowLetters.length - 1][j].toLowerCase()
+									)
 								) {
-									//matchedWords.push(yellowResult[i]);
-									isGood = true;
+									testWord = result[i];
 								} else {
-									isGood = false;
+									testWord = "";
+									break;
 								}
 							}
-							if (isGood === true) {
-								matchedWords.push(result[i]);
+							//console.log(testWord);
+							if (testWord) {
+								matchedWords.push(testWord);
 							}
 						}
+						//console.log(matchedWords, "yellow matched");
 						return matchedWords;
 					} else {
 						return result;
 					}
 				};
-
+				//console.log(redLetters, "red letters");
 				// red filter
 				const redFilterWord = () => {
 					const yellowResult = yellowFilterWord();
+					//console.log(yellowResult, "yellow result");
 					const matchedWords = [];
-					for (let i = 0; i < yellowResult.length; i++) {
-						let isGood;
-						for (let j = 0; j < redLetters.length; j++) {
-							//console.log(redLetters[j]);
-							if (yellowResult[i].includes(redLetters[j].toLowerCase())) {
-								//matchedWords.push(yellowResult[i]);
-								isGood = false;
-								break;
-							} else {
-								isGood = true;
+					if (redLetters.length > 0) {
+						for (let i = 0; i < yellowResult.length; i++) {
+							// result[i] is each individual word
+							let testWord = "";
+							// loop through the yellowLetters array and repeatetdly test to see if every yellow letter is present
+							for (let j = 0; j < redLetters.length; j++) {
+								//console.log(yellowLetters[yellowLetters.length - 1][j]);
+								// yellowLetters[j] is each individual yellow letter
+								if (yellowResult[i].includes(redLetters[j].toLowerCase())) {
+									testWord = "";
+									break;
+								} else {
+									testWord = yellowResult[i];
+								}
+							}
+							//console.log(testWord);
+							if (testWord) {
+								matchedWords.push(testWord);
 							}
 						}
-						if (isGood === true) {
-							matchedWords.push(yellowResult[i]);
-						}
+						return matchedWords;
+					} else {
+						return yellowResult;
 					}
 					//console.log(matchedWords);
-					return matchedWords;
 				};
 				const redResult = redFilterWord();
 
 				//console.log(result);
 				//console.log(yellowResult);
 				console.log(redResult, "red result");
-				if (redResult.length === 1) {
+				if (redResult.length <= 1) {
 					wordStr = "NO WORD";
 				} else {
-					wordStr = redResult[Math.floor(Math.random() * redResult.length)];
+					let randomResult =
+						redResult[Math.floor(Math.random() * redResult.length)];
+					if (
+						randomResult ===
+						boardState.wordsUsed[boardState.wordsUsed.length - 1]
+							.join()
+							.toLowerCase()
+					) {
+						redResult.splice(redResult.indexOf(previousHint), 1);
+						wordStr = redResult[Math.floor(Math.random() * redResult.length)];
+					} else {
+						wordStr = randomResult;
+					}
 				}
 			}
 
@@ -168,6 +199,7 @@ const createWHBtn = () => {
 				window.alert("No more hints to give :) Good Luck");
 			} else {
 				window.alert(`Recommended word to use is ${wordStr}`);
+				previousHint = wordStr;
 			}
 		} else {
 			console.log("helper gameState not working");
@@ -499,6 +531,7 @@ const initGameState = () => {
 		for (let i = 0; i < boardState.wordsUsed.length; i++) {
 			const currentRowGreen = [];
 			const currentRowYellow = [];
+			const loopRedLetters = [];
 			let remainingLetters = boardState.currentWord.join("");
 
 			// check green
@@ -517,7 +550,7 @@ const initGameState = () => {
 					// add red background
 					containerArr[i].children[j].style.backgroundColor = "#aa0000";
 					containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
-					redLetters.push(boardState.wordsUsed[i][j]);
+					loopRedLetters.push(boardState.wordsUsed[i][j]);
 					currentRowGreen.push(".");
 				}
 			}
@@ -540,18 +573,27 @@ const initGameState = () => {
 
 			// check if redLetters contains anything from greenLetters or yellowLetters
 			// if redLetters contains any of them then splice them out
-
-			for (let j = 0; j < redLetters.length; j++) {
+			const testRed = [...loopRedLetters];
+			for (let j = 0; j < loopRedLetters.length; j++) {
+				//console.log(currentRowYellow.includes(loopRedLetters[j]), j);
 				if (
-					currentRowGreen.includes(redLetters[j]) ||
-					currentRowYellow.includes(redLetters[j])
+					currentRowYellow.includes(loopRedLetters[j]) ||
+					currentRowGreen.includes(loopRedLetters[j])
 				) {
 					// get position of specific redLetter
 					// splice it out of redLetter arr
-					redLetters.splice(j, 1);
-					//console.log(redLetters, "post splice");
+					testRed.splice(j, 1, ".");
+					//console.log(testRed[j], " spliced");
+				} else {
+					//console.log(j, "not spliced");
 				}
 			}
+			for (let j = 0; j < testRed.length; j++) {
+				if (testRed[j] !== ".") {
+					redLetters.push(testRed[j]);
+				}
+			}
+			//console.log(redLetters, "red letters");
 			// end colour/letter check
 
 			//console.log(currentRowGreen);
@@ -565,6 +607,10 @@ const initGameState = () => {
 				if (currentRowYellow.length > 0) {
 					yellowLetters.push(currentRowYellow);
 				}
+
+				//console.log(greenLetters);
+				//console.log(yellowLetters, "yellow letters");
+				//console.log(redLetters, "red letters");
 			}
 			if (testGreen >= 5) {
 				boardState.gameState = "WIN";
@@ -584,8 +630,10 @@ const initGameState = () => {
 			createNGBtn();
 		}
 	}
-	focusInputRow();
-	startWordle();
+	if (boardState.gameState === "ACTIVE") {
+		focusInputRow();
+		startWordle();
+	}
 	//console.log(greenCount);
 	//console.log(remainingGuesses);
 
