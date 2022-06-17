@@ -469,60 +469,83 @@ const initGameState = () => {
 		for (let i = 0; i < boardState.wordsUsed.length; i++) {
 			const currentRowGreen = [];
 			const currentRowYellow = [];
-			for (let j = 0; j < boardState.wordsUsed[i].length; j++) {
-				// when typed put letter in y row in x column and + 1 the x value
-				containerArr[inputRow].children[letterColumn].textContent =
-					boardState.wordsUsed[i][j];
+			let remainingLetters = boardState.currentWord.join("");
+			let inputArr = Array.from(containerArr[inputRow].children);
+			//console.log(inputArr);
 
-				if (boardState.currentWord[j] === boardState.wordsUsed[i][j]) {
-					containerArr[inputRow].children[letterColumn].style.backgroundColor =
-						"#78ca00";
+			// when typed put letter in y row in x column and + 1 the x value
 
-					testGreen++;
+			// check green
+			for (let j = 0; j < 5; j++) {
+				if (boardState.wordsUsed[i][j] === boardState.currentWord[j]) {
+					remainingLetters = remainingLetters.replace(
+						boardState.wordsUsed[i][j],
+						""
+					);
+					// add green background
+					containerArr[i].children[j].style.backgroundColor = "#78ca00";
+					containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
 					currentRowGreen.push(boardState.wordsUsed[i][j]);
-				} else if (
-					boardState.currentWord.includes(boardState.wordsUsed[i][j])
-				) {
-					containerArr[inputRow].children[letterColumn].style.backgroundColor =
-						"#ffef0d";
-					currentRowYellow.push(boardState.wordsUsed[i][j]);
-					currentRowGreen.push(".");
 				} else {
-					containerArr[inputRow].children[letterColumn].style.backgroundColor =
-						"#aa0000";
+					// add red background
+					containerArr[i].children[j].style.backgroundColor = "#aa0000";
+					containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
 					redLetters.push(boardState.wordsUsed[i][j]);
-					currentRowGreen.push(".");
 				}
-
-				letterColumn++;
-				//greenLetters.length = 0;
 			}
+			// check yellow
+			for (let j = 0; j < 5; j++) {
+				if (
+					remainingLetters.includes(boardState.wordsUsed[i][j]) &&
+					boardState.wordsUsed[i][j] !== boardState.currentWord[j]
+				) {
+					remainingLetters = remainingLetters.replace(
+						boardState.wordsUsed[i][j],
+						""
+					);
+					// add yellow background
+					containerArr[i].children[j].style.backgroundColor = "#ffef0d";
+					containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
+					currentRowYellow.push(boardState.wordsUsed[i][j]);
+
+					if (redLetters.includes(boardState.wordsUsed[i][j])) {
+						redLetters.splice(
+							redLetters.indexOf(boardState.wordsUsed[i][j]),
+							1
+						);
+					}
+				}
+			}
+
+			console.log(i, remainingLetters);
+			console.log(currentRowGreen, "green");
+			console.log(currentRowYellow, "yellow");
+			console.log(redLetters, "red");
+
 			if (i < boardState.wordsUsed.length && testGreen < 5) {
 				testGreen = 0;
 				remainingGuesses--;
 				inputRow++;
-				letterColumn = 0;
+				//letterColumn = 0;
 				greenLetters.push(currentRowGreen);
 				if (currentRowYellow.length > 0) {
 					yellowLetters.push(currentRowYellow);
 				}
 			}
 			if (testGreen >= 5) {
-				inputRow++;
-				unfocusPreviousRow();
-				inputRow--;
+				boardState.gameState = "WIN";
+			}
+			if (remainingGuesses <= 0) {
+				boardState.gameState = "LOST";
 			}
 		}
 
-		console.log(greenLetters);
-		console.log(yellowLetters);
-		console.log(redLetters);
+		//console.log(greenLetters);
+		//console.log(yellowLetters);
+		//console.log(redLetters);
 		greenCount = testGreen;
 		if (greenCount >= 5 || remainingGuesses <= 0) {
 			createNGBtn();
-			if (boardState.wordsUsed.length >= 2) {
-				unfocusPreviousRow();
-			}
 		}
 	}
 	focusInputRow();
