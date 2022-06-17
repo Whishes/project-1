@@ -46,7 +46,7 @@ const startWordle = () => {
 		});
 		boardState.currentWord = chosenWord;
 	}
-	//console.log(boardState);
+	console.log(boardState);
 	//console.log(chosenWord);
 };
 
@@ -516,10 +516,10 @@ const initGameState = () => {
 	// pulls from localStorage etc
 	if (localStorage.getItem("wordStreaks") != 0) {
 		//console.log(localStorage.getItem("wordStreaks"));
-		let streakArr = JSON.parse(localStorage.getItem("wordStreaks"));
+		let streakObj = JSON.parse(localStorage.getItem("wordStreaks"));
 		//console.log(streakArr);
-		currentStreak = streakArr[0];
-		overallStreak = streakArr[1];
+		currentStreak = streakObj.currentStreak;
+		overallStreak = streakObj.overallStreak;
 	}
 	// gets the boardState from localStorage and puts in on the screen
 	if (localStorage.getItem("boardState")) {
@@ -671,8 +671,11 @@ window.onbeforeunload = () => {
 	if (localStorage.getItem("boardState") === JSON.stringify(boardState)) {
 		console.log("Same Board state");
 	} else {
-		streakArr = [currentStreak, overallStreak];
-		localStorage.setItem("wordStreaks", JSON.stringify(streakArr));
+		streakObj = {
+			currentStreak: currentStreak,
+			overallStreak: overallStreak,
+		};
+		localStorage.setItem("wordStreaks", JSON.stringify(streakObj));
 
 		localStorage.setItem("boardState", JSON.stringify(boardState));
 	}
