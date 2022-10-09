@@ -91,6 +91,29 @@ const initHelpModal = () => {
 	});
 };
 
+// flip animation stuff
+const flipAnimation = (index, colour) => {
+	const time = 300;
+	const delay = 2000;
+	setTimeout(() => {
+		rowArr[index].animate(
+			[
+				{ transform: "rotateY(0deg)" },
+				{ transform: "rotateY(180deg)" },
+				{
+					transform: "rotateY(360deg)",
+					backgroundColor: colour,
+				},
+			],
+			delay
+		);
+
+		setTimeout(() => {
+			rowArr[index].style.backgroundColor = colour;
+		}, delay);
+	}, index * time);
+};
+
 // Handles everything to do with letters being clicked/types + most of the game logic
 const logKey = (e) => {
 	if (boardState.gameState !== "ACTIVE") {
@@ -106,7 +129,6 @@ const logKey = (e) => {
 		}
 
 		const rowArr = containerArr[inputRow].children;
-		// loop through y row and get all x values and push into an array
 
 		// check if the word actually exists
 		if (!words.includes(userWordArr.join("").toLowerCase())) {
@@ -120,31 +142,8 @@ const logKey = (e) => {
 			return;
 		}
 
-		// compare the userWordArr result to the boardState.currentWord array
 		let remainingLetters = boardState.currentWord.join("");
-		const time = 300;
-		const delay = 2000;
 		let greenCount = 0;
-
-		const flipAnimation = (index, colour) => {
-			setTimeout(() => {
-				rowArr[index].animate(
-					[
-						{ transform: "rotateY(0deg)" },
-						{ transform: "rotateY(180deg)" },
-						{
-							transform: "rotateY(360deg)",
-							backgroundColor: colour,
-						},
-					],
-					delay
-				);
-
-				setTimeout(() => {
-					rowArr[index].style.backgroundColor = colour;
-				}, delay);
-			}, index * time);
-		};
 
 		// check green
 		for (let i = 0; i < 5; i++) {
@@ -165,7 +164,6 @@ const logKey = (e) => {
 				userWordArr[i] !== boardState.currentWord[i]
 			) {
 				remainingLetters = remainingLetters.replace(userWordArr[i], "");
-				// add yellow background
 				rowArr[i].style.backgroundColor = "#ffef0d";
 				flipAnimation(i, "#ffef0d");
 			}
@@ -206,15 +204,12 @@ const logKey = (e) => {
 		}
 	} else if (e.keyCode === 8 || e === "←") {
 		// Do this is if backspace has been pressed
-
-		if (letterColumn <= 0) {
+		if (letterColumn > 0) {
 			// stops backspace being pressed if there's no letters
-			return;
+			letterColumn--; // move the position of the "cursor" back one
+			containerArr[inputRow].children[letterColumn].textContent = ""; // clear the x value
+			userWordArr.pop();
 		}
-		//
-		letterColumn--; // move the position of the "cursor" back one
-		containerArr[inputRow].children[letterColumn].textContent = ""; // clear the x value
-		userWordArr.pop();
 	} else {
 		const letter =
 			e.constructor.name === "KeyboardEvent"
