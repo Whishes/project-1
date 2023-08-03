@@ -12,359 +12,365 @@ let remainingGuesses = 5; // guesses result count
 let overallStreak = 0; // total words guessed
 let currentStreak = 0; // current streak of correctly guessed words
 let boardState = {
-	wordsUsed: [],
-	currentWord: [],
-	gameState: "ACTIVE",
+  wordsUsed: [],
+  currentWord: [],
+  gameState: "ACTIVE",
 };
 const userWordArr = []; // user's word
 
 // Function to choose a random word from the words array
 const startWordle = () => {
-	// check if there's a word currently stored in the boardState
-	if (boardState.currentWord.length <= 0) {
-		// Gets a random word from the array
-		const word = words[Math.floor(Math.random() * words.length)]
-			.toUpperCase()
-			.split("");
+  // check if there's a word currently stored in the boardState
+  if (boardState.currentWord.length <= 0) {
+    // Gets a random word from the array
+    const word = words[Math.floor(Math.random() * words.length)]
+      .toUpperCase()
+      .split("");
 
-		boardState.currentWord = word;
-	}
-	//console.log(boardState);
+    boardState.currentWord = word;
+  }
+  //console.log(boardState);
 };
 
 // Resets all the global variables for a new game to be played
 const resetWordle = () => {
-	// loop through each row of the inputs
-	for (let i = 0; i < containerArr.length; i++) {
-		// loop through each input column in the i'th row
-		for (let j = 0; j < containerArr[i].children.length; j++) {
-			containerArr[i].children[j].innerText = "";
-			containerArr[i].children[j].style.backgroundColor = "#333";
-		}
-	}
+  // loop through each row of the inputs
+  for (let i = 0; i < containerArr.length; i++) {
+    // loop through each input column in the i'th row
+    for (let j = 0; j < containerArr[i].children.length; j++) {
+      containerArr[i].children[j].innerText = "";
+      containerArr[i].children[j].style.backgroundColor = "#333";
+    }
+  }
 
-	keyboard[0].removeChild(keyboard[0].firstElementChild); // removes the newGameBtn
-	boardState.currentWord.length = 0;
-	boardState.wordsUsed.length = 0;
-	boardState.gameState = "ACTIVE";
-	inputRow = 0;
-	letterColumn = 0;
-	remainingGuesses = 5;
-	userWordArr.length = 0;
+  keyboard[0].removeChild(keyboard[0].firstElementChild); // removes the newGameBtn
+  boardState.currentWord.length = 0;
+  boardState.wordsUsed.length = 0;
+  boardState.gameState = "ACTIVE";
+  inputRow = 0;
+  letterColumn = 0;
+  remainingGuesses = 5;
+  userWordArr.length = 0;
 };
 
 // Create New Game Btn function
 const createNGBtn = () => {
-	const btn = document.createElement("button");
-	btn.id = "nGameBtn";
-	btn.addEventListener("click", function () {
-		resetWordle();
-		startWordle();
-		focusInputRow();
-		localStorage.clear("boardState");
-	});
-	btn.textContent = "New Game?";
-	// puts the btn elemtent in the first position
-	keyboard[0].insertAdjacentElement("afterbegin", btn);
+  const btn = document.createElement("button");
+  btn.id = "nGameBtn";
+  btn.addEventListener("click", function () {
+    resetWordle();
+    startWordle();
+    focusInputRow();
+    localStorage.clear("boardState");
+  });
+  btn.textContent = "New Game?";
+  // puts the btn elemtent in the first position
+  keyboard[0].insertAdjacentElement("afterbegin", btn);
 };
 
 // Updates the onscreen overall and current word streak text content
 const updateStreak = () => {
-	const streakText = document.getElementById("wStreak");
-	streakText.textContent = `${currentStreak} / ${overallStreak} word streak`;
+  const streakText = document.getElementById("wStreak");
+  streakText.textContent = `${currentStreak} / ${overallStreak} word streak`;
 };
 
 // Gives the ability to open and close the help screen modal
 const initHelpModal = () => {
-	const helpModal = document.getElementById("helpModal"); // get the help modal
-	const helpBtn = document.getElementById("helpBtn");
-	const closeModal = document.getElementsByClassName("close")[0];
+  const helpModal = document.getElementById("helpModal"); // get the help modal
+  const helpBtn = document.getElementById("helpBtn");
+  const closeModal = document.getElementsByClassName("close")[0];
 
-	helpBtn.addEventListener("click", function () {
-		//helpModal.style.display = "block";
-		helpModal.classList.add("open");
-	});
+  helpBtn.addEventListener("click", function () {
+    //helpModal.style.display = "block";
+    helpModal.classList.add("open");
+  });
 
-	closeModal.addEventListener("click", function () {
-		//helpModal.style.display = "none";
-		helpModal.classList.remove("open");
-	});
+  closeModal.addEventListener("click", function () {
+    //helpModal.style.display = "none";
+    helpModal.classList.remove("open");
+  });
 };
 
 // flip animation stuff
 const flipAnimation = (index, colour) => {
-	const time = 300;
-	const delay = 2000;
-	setTimeout(() => {
-		rowArr[index].animate(
-			[
-				{ transform: "rotateY(0deg)" },
-				{ transform: "rotateY(180deg)" },
-				{
-					transform: "rotateY(360deg)",
-					backgroundColor: colour,
-				},
-			],
-			delay
-		);
+  // weird issue with moving the cursor etc etc but fixes it
+  const properRow = boardState.gameState === "WON" ? inputRow - 1 : inputRow;
 
-		setTimeout(() => {
-			rowArr[index].style.backgroundColor = colour;
-		}, delay);
-	}, index * time);
+  const time = 300;
+  const delay = 2000;
+  setTimeout(() => {
+    containerArr[properRow].children[index].animate(
+      [
+        { transform: "rotateY(0deg)" },
+        { transform: "rotateY(180deg)" },
+        {
+          transform: "rotateY(360deg)",
+          backgroundColor: colour,
+        },
+      ],
+      delay
+    );
+
+    setTimeout(() => {
+      containerArr[properRow].children[index].style.backgroundColor = colour;
+    }, delay);
+  }, index * time);
 };
 
 // Handles everything to do with letters being clicked/types + most of the game logic
 const logKey = (e) => {
-	if (boardState.gameState !== "ACTIVE") {
-		return;
-	}
+  if (boardState.gameState !== "ACTIVE") {
+    return;
+  }
 
-	if (e.keyCode === 13 || e === "↵") {
-		// Do this if Enter is pressed
+  if (e.keyCode === 13 || e === "↵") {
+    // Do this if Enter is pressed
 
-		// don't run word check if 5 letters aren't present
-		if (letterColumn < 5) {
-			return;
-		}
+    // don't run word check if 5 letters aren't present
+    if (letterColumn < 5) {
+      return;
+    }
 
-		const rowArr = containerArr[inputRow].children;
+    const rowArr = containerArr[inputRow].children;
 
-		// check if the word actually exists
-		if (!words.includes(userWordArr.join("").toLowerCase())) {
-			// do this if the word doesn't exist
-			for (let i = 0; i < rowArr.length; i++) {
-				rowArr[i].style.animation = "shake 1s ease-in";
-				setTimeout(() => {
-					rowArr[i].style.animation = "";
-				}, 1000);
-			}
-			return;
-		}
+    // check if the word actually exists
+    if (!words.includes(userWordArr.join("").toLowerCase())) {
+      // do this if the word doesn't exist
+      for (let i = 0; i < rowArr.length; i++) {
+        rowArr[i].style.animation = "shake 1s ease-in";
+        setTimeout(() => {
+          rowArr[i].style.animation = "";
+        }, 1000);
+      }
+      return;
+    }
 
-		let remainingLetters = boardState.currentWord.join("");
-		let greenCount = 0;
+    let remainingLetters = boardState.currentWord.join("");
+    let greenCount = 0;
 
-		// check green
-		for (let i = 0; i < 5; i++) {
-			if (boardState.currentWord[i] === userWordArr[i]) {
-				remainingLetters = remainingLetters.replace(userWordArr[i], "");
-				greenCount++;
-				flipAnimation(i, "#78ca00");
-			} else {
-				// add red background
-				rowArr[i].style.backgroundColor = "#aa0000";
-				flipAnimation(i, "#aa0000");
-			}
-		}
-		// check yellow
-		for (let i = 0; i < 5; i++) {
-			if (
-				remainingLetters.includes(userWordArr[i]) &&
-				userWordArr[i] !== boardState.currentWord[i]
-			) {
-				remainingLetters = remainingLetters.replace(userWordArr[i], "");
-				rowArr[i].style.backgroundColor = "#ffef0d";
-				flipAnimation(i, "#ffef0d");
-			}
-		}
+    // check green
+    for (let i = 0; i < 5; i++) {
+      if (boardState.currentWord[i] === userWordArr[i]) {
+        remainingLetters = remainingLetters.replace(userWordArr[i], "");
+        greenCount++;
+        flipAnimation(i, "#78ca00");
+      } else {
+        // add red background
+        rowArr[i].style.backgroundColor = "#aa0000";
+        flipAnimation(i, "#aa0000");
+      }
+    }
+    // check yellow
+    for (let i = 0; i < 5; i++) {
+      if (
+        remainingLetters.includes(userWordArr[i]) &&
+        userWordArr[i] !== boardState.currentWord[i]
+      ) {
+        remainingLetters = remainingLetters.replace(userWordArr[i], "");
+        rowArr[i].style.backgroundColor = "#ffef0d";
+        flipAnimation(i, "#ffef0d");
+      }
+    }
 
-		// check if all are correct, if not move to next row etc
-		if (greenCount >= 5) {
-			alert(
-				`You got the word ${boardState.currentWord.join("")} in ${
-					6 - remainingGuesses
-				} guesses`
-			);
-			overallStreak++;
-			currentStreak++;
-			updateStreak();
-			createNGBtn();
-			boardState.wordsUsed.push([...userWordArr]);
-			boardState.gameState = "WON";
-		} else if (remainingGuesses <= 0) {
-			// Check if final row. If so end game, if not move to next row
-			alert(`You lost! The secret word is ${boardState.currentWord.join("")}`);
-			createNGBtn();
-			overallStreak++;
-			currentStreak = 0;
-			updateStreak();
-			boardState.wordsUsed.push([...userWordArr]);
-			boardState.gameState = "LOST";
-		} else {
-			// everything else
-			boardState.wordsUsed.push([...userWordArr]);
-			inputRow++; // moves cursor to next row
-			letterColumn = 0; // moves cursor to first column
-			remainingGuesses--; // deducts guess count by 1
-			unfocusPreviousRow(); // removes event listeners and blurs previous row
-			focusInputRow(); // adds event listeners and focuses new row
-			userWordArr.length = 0; // empties user word guess
-			greenCount = 0;
-		}
-	} else if (e.keyCode === 8 || e === "←") {
-		// Do this is if backspace has been pressed
-		if (letterColumn > 0) {
-			// stops backspace being pressed if there's no letters
-			letterColumn--; // move the position of the "cursor" back one
-			containerArr[inputRow].children[letterColumn].textContent = ""; // clear the x value
-			userWordArr.pop();
-		}
-	} else {
-		const letter =
-			e.constructor.name === "KeyboardEvent"
-				? e.key.toUpperCase()
-				: e.toUpperCase();
-		// Do this if a letter is pressed
-		if (!letter.match(/[A-Z]/g)) {
-			return;
-		}
+    // check if all are correct, if not move to next row etc
+    if (greenCount >= 5) {
+      alert(
+        `You got the word ${boardState.currentWord.join("")} in ${
+          6 - remainingGuesses
+        } guesses`
+      );
+      overallStreak++;
+      currentStreak++;
+      updateStreak();
+      createNGBtn();
+      boardState.wordsUsed.push([...userWordArr]);
+      boardState.gameState = "WON";
+    } else if (remainingGuesses <= 0) {
+      // Check if final row. If so end game, if not move to next row
+      alert(`You lost! The secret word is ${boardState.currentWord.join("")}`);
+      createNGBtn();
+      overallStreak++;
+      currentStreak = 0;
+      updateStreak();
+      boardState.wordsUsed.push([...userWordArr]);
+      boardState.gameState = "LOST";
+    } else {
+      // everything else
+      boardState.wordsUsed.push([...userWordArr]);
+      inputRow++; // moves cursor to next row
+      letterColumn = 0; // moves cursor to first column
+      remainingGuesses--; // deducts guess count by 1
+      unfocusPreviousRow(); // removes event listeners and blurs previous row
+      focusInputRow(); // adds event listeners and focuses new row
+      userWordArr.length = 0; // empties user word guess
+      greenCount = 0;
+    }
+  } else if (e.keyCode === 8 || e === "←") {
+    // Do this is if backspace has been pressed
+    if (letterColumn > 0) {
+      // stops backspace being pressed if there's no letters
+      letterColumn--; // move the position of the "cursor" back one
+      containerArr[inputRow].children[letterColumn].textContent = ""; // clear the x value
+      userWordArr.pop();
+    }
+  } else {
+    const letter =
+      e.constructor.name === "KeyboardEvent"
+        ? e.key.toUpperCase()
+        : e.toUpperCase();
+    // Do this if a letter is pressed
+    if (!letter.match(/^[a-zA-Z]$/g)) {
+      return;
+    }
 
-		if (letterColumn < 5) {
-			// when typed put letter in y row in x column and + 1 the x value
-			containerArr[inputRow].children[letterColumn].textContent = letter;
-			letterColumn++;
-			userWordArr.push(letter);
-		}
-	}
+    if (letterColumn < 5) {
+      // when typed put letter in y row in x column and + 1 the x value
+      containerArr[inputRow].children[letterColumn].textContent = letter;
+      letterColumn++;
+      userWordArr.push(letter);
+    }
+  }
 };
 
 // Adds event listeners and focuses row
 const focusInputRow = () => {
-	for (let i = 0; i < containerArr[inputRow].children.length; i++) {
-		// applies tab index to each div just to check if they can be typed in etc
-		containerArr[inputRow].children[i].tabIndex = i;
+  for (let i = 0; i < containerArr[inputRow].children.length; i++) {
+    // applies tab index to each div just to check if they can be typed in etc
+    containerArr[inputRow].children[i].tabIndex = i;
 
-		// apply focus function to the first element in the row
-		containerArr[inputRow].firstElementChild.focus();
+    // apply focus function to the first element in the row
+    containerArr[inputRow].firstElementChild.focus();
 
-		// adds event lisenter to each individual letter div in the respective row
-		containerArr[inputRow].children[i].addEventListener("keydown", logKey);
-	}
+    // adds event lisenter to each individual letter div in the respective row
+    containerArr[inputRow].children[i].addEventListener("keydown", logKey);
+  }
 };
 
 // Removes event listeners and blurs previous row
 const unfocusPreviousRow = () => {
-	const previousRow = containerArr[inputRow - 1];
-	for (let i = 0; i < previousRow.children.length; i++) {
-		// applies tab index to each div just to check if they can be typed in etc
-		previousRow.children[i].removeAttribute("tabindex");
+  const previousRow = containerArr[inputRow - 1];
+  for (let i = 0; i < previousRow.children.length; i++) {
+    // applies tab index to each div just to check if they can be typed in etc
+    previousRow.children[i].removeAttribute("tabindex");
 
-		// apply focus function to the first element in the row
-		previousRow.firstElementChild.blur();
+    // apply focus function to the first element in the row
+    previousRow.firstElementChild.blur();
 
-		// adds event lisenter to each individual letter div in the respective row
-		previousRow.children[i].removeEventListener("keydown", logKey, true);
-	}
+    // adds event lisenter to each individual letter div in the respective row
+    previousRow.children[i].removeEventListener("keydown", logKey, true);
+  }
 };
 
 const fillBoardFromStorage = () => {
-	let testGreen = 0;
-	boardState = JSON.parse(localStorage.getItem("boardState"));
+  let testGreen = 0;
+  boardState = JSON.parse(localStorage.getItem("boardState"));
 
-	// loop through the boardState.wordsUsed to the y values sorted
-	for (let i = 0; i < boardState.wordsUsed.length; i++) {
-		let remainingLetters = boardState.currentWord.join("");
+  // loop through the boardState.wordsUsed to the y values sorted
+  for (let i = 0; i < boardState.wordsUsed.length; i++) {
+    let remainingLetters = boardState.currentWord.join("");
 
-		// check green
-		for (let j = 0; j < 5; j++) {
-			if (boardState.wordsUsed[i][j] === boardState.currentWord[j]) {
-				remainingLetters = remainingLetters.replace(
-					boardState.wordsUsed[i][j],
-					""
-				);
-				// add green background
-				containerArr[i].children[j].style.backgroundColor = "#78ca00";
-				containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
-				testGreen++;
-			} else {
-				// add red background
-				containerArr[i].children[j].style.backgroundColor = "#aa0000";
-				containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
-			}
-		}
-		// check yellow
-		for (let j = 0; j < 5; j++) {
-			if (
-				remainingLetters.includes(boardState.wordsUsed[i][j]) &&
-				boardState.wordsUsed[i][j] !== boardState.currentWord[j]
-			) {
-				remainingLetters = remainingLetters.replace(
-					boardState.wordsUsed[i][j],
-					""
-				);
-				// add yellow background
-				containerArr[i].children[j].style.backgroundColor = "#ffef0d";
-				containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
-			}
-		}
+    // check green
+    for (let j = 0; j < 5; j++) {
+      if (boardState.wordsUsed[i][j] === boardState.currentWord[j]) {
+        remainingLetters = remainingLetters.replace(
+          boardState.wordsUsed[i][j],
+          ""
+        );
+        // add green background
+        containerArr[i].children[j].style.backgroundColor = "#78ca00";
+        containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
+        testGreen++;
+      } else {
+        // add red background
+        containerArr[i].children[j].style.backgroundColor = "#aa0000";
+        containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
+      }
+    }
+    // check yellow
+    for (let j = 0; j < 5; j++) {
+      if (
+        remainingLetters.includes(boardState.wordsUsed[i][j]) &&
+        boardState.wordsUsed[i][j] !== boardState.currentWord[j]
+      ) {
+        remainingLetters = remainingLetters.replace(
+          boardState.wordsUsed[i][j],
+          ""
+        );
+        // add yellow background
+        containerArr[i].children[j].style.backgroundColor = "#ffef0d";
+        containerArr[i].children[j].textContent = boardState.wordsUsed[i][j];
+      }
+    }
 
-		// game state checks
-		if (testGreen >= 5) {
-			boardState.gameState = "WIN";
-			createNGBtn();
-			break;
-		} else if (remainingGuesses <= 0) {
-			boardState.gameState = "LOST";
-			createNGBtn();
-			break;
-		} else {
-			testGreen = 0;
-			remainingGuesses--;
-			inputRow++;
-		}
-	}
+    // game state checks
+    if (testGreen >= 5) {
+      boardState.gameState = "WIN";
+      createNGBtn();
+      break;
+    } else if (remainingGuesses <= 0) {
+      boardState.gameState = "LOST";
+      createNGBtn();
+      break;
+    } else {
+      testGreen = 0;
+      remainingGuesses--;
+      inputRow++;
+    }
+  }
 };
 
 // Init game state
 const initGameState = () => {
-	// pulls word streak from localStorage if it exists
-	if (localStorage.getItem("wordStreaks") !== null) {
-		const streakObj = JSON.parse(localStorage.getItem("wordStreaks"));
-		currentStreak = streakObj.currentStreak;
-		overallStreak = streakObj.overallStreak;
-	}
+  // pulls word streak from localStorage if it exists
+  if (localStorage.getItem("wordStreaks") !== null) {
+    const streakObj = JSON.parse(localStorage.getItem("wordStreaks"));
+    currentStreak = streakObj.currentStreak;
+    overallStreak = streakObj.overallStreak;
+  }
 
-	// gets the boardState from localStorage and puts in on the screen
-	if (localStorage.getItem("boardState")) {
-		fillBoardFromStorage();
-	}
+  // gets the boardState from localStorage and puts in on the screen
+  if (localStorage.getItem("boardState")) {
+    fillBoardFromStorage();
+  }
 
-	// sets up game functionality (event listeners etc)
-	if (boardState.gameState === "ACTIVE") {
-		focusInputRow();
-		startWordle();
+  // sets up game functionality (event listeners etc)
+  if (boardState.gameState === "ACTIVE") {
+    focusInputRow();
+    startWordle();
 
-		for (const key of keys) {
-			key.addEventListener("click", () => logKey(key.textContent));
-		}
-	}
+    for (const key of keys) {
+      key.addEventListener("click", () => logKey(key.textContent));
+    }
+  }
 
-	// makes sure the input divs are always focused no matter where you click on the screen
-	document.body.addEventListener("click", () => {
-		containerArr[inputRow].firstElementChild.focus();
-	});
+  // makes sure the input divs are always focused no matter where you click on the screen
+  document.body.addEventListener("click", () => {
+    containerArr[inputRow].firstElementChild.focus();
+  });
 
-	// starts help modal stuff
-	initHelpModal();
+  // starts help modal stuff
+  initHelpModal();
 
-	updateStreak();
+  updateStreak();
+
+  console.log(boardState);
 };
 
 // Save game state on window unload
-window.onbeforeunload = () => {
-	if (localStorage.getItem("boardState") !== JSON.stringify(boardState)) {
-		streakObj = {
-			currentStreak: currentStreak,
-			overallStreak: overallStreak,
-		};
-		localStorage.setItem("wordStreaks", JSON.stringify(streakObj));
+window.addEventListener("beforeunload", () => {
+  if (localStorage.getItem("boardState") !== JSON.stringify(boardState)) {
+    let streakObj = {
+      currentStreak: currentStreak,
+      overallStreak: overallStreak,
+    };
 
-		localStorage.setItem("boardState", JSON.stringify(boardState));
-	}
+    localStorage.setItem("wordStreaks", JSON.stringify(streakObj));
 
-	// prevents any pop-ups from occurring
-	return null;
-};
+    localStorage.setItem("boardState", JSON.stringify(boardState));
+  }
+
+  // prevents any pop-ups from occurring
+  //   return null;
+});
 
 initGameState();
